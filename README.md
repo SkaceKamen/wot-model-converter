@@ -5,7 +5,6 @@ Converts World of Tanks models to wavefront obj format.
 * script currently parse normals faultly
 * script only parse diffuse textures
 * script may not work on HD chassis models
-* PHP is required for unpacking xml file, I'll work on converting it into python later
 
 ## Usage
 Script requires .primitives and .visual files of model to create obj (and mtl) file. You can either specify only primitives file and script will assume visual file is in same folder with same name, but different extension, or you can specify path to visual file separatedly.
@@ -55,5 +54,3 @@ will output 'Hull.obj' with all model data and 'Hull.mtl' with materials
 
 ## Requirements
 Python 2.7
-
-PHP 5.0+
