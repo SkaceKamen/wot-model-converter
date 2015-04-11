@@ -5,6 +5,7 @@ import argparse
 import os
 import zlib
 import ctypes
+import wot
 from struct import unpack
 
 def unpackNormal(packed):
@@ -136,7 +137,8 @@ for fpath in (filename_primitive, filename_visual):
 
 
 #Unpack XML file
-subprocess.call(["php", "xml-convert.php", filename_visual, filename_visual.replace('.visual', '.xml')])
+#subprocess.call(["php", "xml-convert.php", filename_visual, filename_visual.replace('.visual', '.xml2')])
+wot.unpackXml(filename_visual, filename_visual.replace('.visual', '.xml'))
 
 filename_visual = filename_visual.replace('.visual', '.xml')
 
@@ -164,6 +166,11 @@ for set in root.findall("renderSet"):
 				textures['diffuse'] = prop.find("Texture").text.strip()
 		group_textures[item.text.strip()] = textures
 	visual_textures.append(group_textures)
+	
+tree = None
+root = None
+
+os.unlink(filename_visual)
 	
 with open(filename_primitive, 'rb') as main:
 	main.seek(-4, 2)
