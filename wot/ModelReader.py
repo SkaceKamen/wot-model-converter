@@ -18,14 +18,15 @@ class ModelReader:
 			geometry = set.find("geometry")
 		
 			visual_name_list.append([
-				geometry.find("vertices").text,
-				geometry.find("primitive").text
+				geometry.find("vertices").text.strip(),
+				geometry.find("primitive").text.strip()
 			])
 			
 			group_materials = {}
 			for item in geometry.findall("primitiveGroup"):
 				material = Material()
 				
+				#@TODO: Add compaitibility with mfm
 				for prop in item.find("material").findall("property"):
 					if prop.text.strip() == "diffuseMap":
 						material.diffuseMap = prop.find("Texture").text.strip()
@@ -79,8 +80,6 @@ class ModelReader:
 			section_name_length = unpack('I', data)[0]
 			section_name = main.read(section_name_length)
 		
-			#print "Section", "[" + section_name + "]"
-		
 			if 'vertices' in section_name:
 				sub_groups += 1
 		
@@ -103,7 +102,7 @@ class ModelReader:
 			
 			if section_name_length % 4 > 0:
 				main.read(4 - section_name_length % 4)
-			
+
 			sections[section_name] = section
 			
 		sg = sub_groups - 1
@@ -188,8 +187,6 @@ class ModelReader:
 			for group in pGroups:
 				total_polygons += group['nPrimitives']
 			
-			#print "subname", vertices_subname, "count", vertices_count, "polys", total_polygons
-			
 			if "xyznuviiiwwtb" in vertices_subname:
 				stride = 37
 				
@@ -209,6 +206,7 @@ class ModelReader:
 					index = k
 				
 				groups.append(pGroups[index])
+				groups[k]['position'] = section_indicies['position'] + groups[k]['startIndex'] * ind_scale + 72
 				groups[k]['vertices'] = []
 				
 				pos = groups[k]['nVertices']
@@ -249,9 +247,9 @@ class ModelReader:
 			model = Model()
 			root.models.append(model)
 			
-			for group in groups:
-				main.seek(section_indicies['position'] + group['startIndex'] * ind_scale + 72)
-
+			for group in subgroup:
+				main.seek(group['position'])
+				
 				group['indicies'] = []
 				
 				i = 0
@@ -260,6 +258,8 @@ class ModelReader:
 					p1 = None
 					p2 = None
 					p3 = None
+				
+					#print "Loaded", i, "/", cnt
 				
 					if ind_scale != 2:
 						p2 = unpack('I', main.read(4))[0]

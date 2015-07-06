@@ -13,7 +13,11 @@ class XmlUnpacker:
 	
 	def read(self, stream):
 		self.stream = stream
-		self.checkHeader()
+		if not self.isPacked():
+			stream.seek(0);
+			tree = ET.fromstring(stream.read())
+			return tree
+		
 		self.dict = self.readDictionary()
 		
 		root = ET.Element('root')
@@ -156,9 +160,10 @@ class XmlUnpacker:
 			str += c
 		return str
 		
-	def checkHeader(self):
+	def isPacked(self):
 		self.stream.seek(0)
 		header = unpack('I', self.stream.read(4))[0]
 		
 		if header != self.PACKED_HEADER:
-			raise Exception('Not a packed XML file')
+			return False
+		return True
