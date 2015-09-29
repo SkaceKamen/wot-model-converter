@@ -1,3 +1,5 @@
+import pdb
+
 import subprocess
 import xml.etree.ElementTree as ET
 import sys
@@ -8,31 +10,59 @@ import ctypes
 import wot
 from struct import unpack
 
+
+#old format VN, 10bit+11bit+11bit as z+y+x
 def unpackNormal(packed):
-	pkz = (long(packed) >> 16) & 0xFF
-	pky = (long(packed) >> 8) & 0xFF
-	pkx = (long(packed)) & 0xFF
+#	pdb.set_trace()
+	pkz = (long(packed) >> 22) & 0x3FF
+	pky = (long(packed) >> 11) & 0x7FF
+	pkx = (long(packed)) & 0x7FF
 	
-	"""z = pkz >> 16
-	y = pky >> 8
-	x = pkx"""
-	
-	x = pkx
-	y = pky
-	z = pkz
-	
-	if x > 0x7F:
-		x = - (x - 0x7F)
-	if y > 0x7F:
-		y = - (y - 0x7F)
-	if z > 0x7F:
-		z = - (z - 0x7F)
-	
+	if pkx > 0x3ff:
+		x = - float((pkx & 0x3ff ^ 0x3ff)+1)/0x3ff
+	else:
+		x = float(pkx)/0x3ff
+	if pky > 0x3ff:
+		y = - float((pky & 0x3ff ^ 0x3ff) +1)/0x3ff 
+	else:
+		y = float(pky)/0x3ff
+	if pkz >0x1ff:
+		z = - float((pkz & 0x1ff ^ 0x1ff) +1)/0x1ff
+	else:
+		z = float(pkz) / 0x1ff
 	return {
-		'x': float(x) / 0xFF,
-		'y': float(y) / 0xFF,
-		'z': float(z) / 0xFF
+		'x': x,
+		'y': y,
+		'z': z
 	}
+
+#new format VN, 0x00 + 8bitZ + 8bitY + 8bitX
+#with inverted VN and f sequence (check reference of flgVerticesLength for detail)
+def unpackNormal_tag3(packed):
+#	pdb.set_trace()
+	pkz = (long(packed) >> 16) & 0xFF ^0xFF
+	pky = (long(packed) >> 8) & 0xFF ^0xFF
+	pkx = (long(packed)   ) & 0xFF ^0xFF
+	
+	if pkx > 0x7f:
+		x = - float(pkx & 0x7f )/0x7f
+	else:
+		x =   float(pkx ^ 0x7f)/0x7f
+	if pky > 0x7f:
+		y = - float(pky & 0x7f)/0x7f 
+	else:
+		y =   float(pky ^ 0x7f)/0x7f
+	if pkz >0x7f:
+		z = - float(pkz & 0x7f)/0x7f
+	else:
+		z =   float(pkz ^ 0x7f)/0x7f
+	return {
+		'x': x,
+		'y': y,
+		'z': z
+	}
+
+
 			
 class vertice:
 	bn = None
@@ -80,6 +110,9 @@ filename_primitive = args.input
 filename_visual = filename_primitive.replace(".primitives", ".visual")
 filename_obj = filename_primitive.replace(".primitives", ".obj")
 filename_mtl = filename_obj.replace(".obj", ".mtl")
+
+flgVerticesLength = 0
+
 
 scale_x = 1
 scale_y = 1
@@ -193,7 +226,7 @@ with open(filename_primitive, 'rb') as main:
 		section_size = unpack('I', data)[0]
 		
 		#Skip dummy bytes
-		main.read(16)
+		data = main.read(16)
 		
 		data = main.read(4)
 		if data == None or len(data) != 4:
@@ -202,10 +235,11 @@ with open(filename_primitive, 'rb') as main:
 		section_name_length = unpack('I', data)[0]
 		section_name = main.read(section_name_length)
 	
-		#print "Section", "[" + section_name + "]"
+		print "Section", "[" + section_name + "]"
 	
 		if 'vertices' in section_name:
 			sub_groups += 1
+#			print 'sub_groups = '+str(sub_groups)
 	
 		if 'colour' in section_name:
 			has_color = True
@@ -311,10 +345,17 @@ with open(filename_primitive, 'rb') as main:
 		for group in pGroups:
 			total_polygons += group['nPrimitives']
 		
-		#print "subname", vertices_subname, "count", vertices_count, "polys", total_polygons
-		
+		print "subname", vertices_subname, "count", vertices_count, "polys", total_polygons
 		if "xyznuviiiwwtb" in vertices_subname:
 			stride = 37
+		if "BPVTxyznuvtb" in vertices_subname:
+			flgVerticesLength = 68
+			stride = 32
+#			pdb.set_trace()
+		if flgVerticesLength>0:
+			flgVertices = main.read(flgVerticesLength)
+		else:
+			flgVertices = 0x0
 			
 		"""
 		@TODO:
@@ -342,6 +383,7 @@ with open(filename_primitive, 'rb') as main:
 				vert.y = unpack('f', main.read(4))[0] * scale_y + transform_y
 				vert.z = unpack('f', main.read(4))[0] * scale_z + transform_z
 				vert.n = unpack('I', main.read(4))[0]
+#				pdb.set_trace()
 				vert.u = unpack('f', main.read(4))[0]
 				vert.v = unpack('f', main.read(4))[0]
 			
@@ -437,15 +479,23 @@ with open(filename_primitive, 'rb') as main:
 				if textures != None and textures['diffuse'] != None and len(textures['diffuse']) > 0:
 					mtlc += "\tmap_Kd " + textures_path + textures['diffuse'] + "\n"
 			
-			objc += "o %s\n" % object_name
+#			objc += "o %s\n" % object_name
+			objc += "g %s\n" % object_name
 			
 			for vertice in group['vertices']:
 				objc += "v %f %f %f\n" % (vertice.x,vertice.y,vertice.z)
 				
 			if output_vn:
-				for vertice in group['vertices']:						
-					n = unpackNormal(vertice.n)
+				x_cnt = 1
+				for vertice in group['vertices']:		
+#					if x_cnt == 395:
+#						pdb.set_trace()
+					if flgVerticesLength > 0:	#v0.10.0 test server 
+						n = unpackNormal_tag3(vertice.n)
+					else:				
+						n = unpackNormal(vertice.n)
 					objc += "vn %f %f %f\n" % (n['x'],n['y'],n['z'])
+					x_cnt += 1
 			
 			if output_vt:
 				for vertice in group['vertices']:
@@ -468,14 +518,18 @@ with open(filename_primitive, 'rb') as main:
 				l2 = total_vertices + indicie['v2'] + 1 - group['startVertex']
 				l3 = total_vertices + indicie['v3'] + 1 - group['startVertex']
 				
+				if stride == 37: #skinned primitives before 0.9.10 need to invert face vertex sequence
+					lx = l1
+					l1 = l3
+					l3 = lx
 				if format == 0:
-					objc += "f %d/%d/%d %d/%d/%d %d/%d/%d\n" % (l1,l1,l1,l2,l2,l2,l3,l3,l3)
+					objc += "f %d/%d/%d %d/%d/%d %d/%d/%d\n" % (l3,l3,l3,l2,l2,l2,l1,l1,l1)
 				elif format == 1:
 					objc += "f %d %d %d\n" % (l1,l2,l3)
 				elif format == 2:
-					objc += "f %d//%d %d//%d %d//%d\n" % (l1,l1,l2,l2,l3,l3)
+					objc += "f %d//%d %d//%d %d//%d\n" % (l3,l3,l2,l2,l1,l1)
 				elif format == 3:
-					objc += "f %d/%d %d/%d %d/%d\n" % (l1,l1,l2,l2,l3,l3)
+					objc += "f %d/%d %d/%d %d/%d\n" % (l3,l3,l2,l2,l1,l1)
 				
 			total_vertices += group['nVertices']
 		sub_index += 1
