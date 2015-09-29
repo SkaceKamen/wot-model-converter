@@ -2,9 +2,11 @@
 Converts World of Tanks models to wavefront obj format.
 
 ## Notes
-* script currently parse normals faultly
 * script only parse diffuse textures
-* script may not work on HD chassis models
+* all primitive groups are packed into one single obj file at this time
+* skinned weight can be extracted but not supported by wavefront obj. Another branch for FBX/DAE exporter would be necessary.
+* support new primitives variant used in leaked WoT v0.10.0 HD models. Live server compatibility remain to be examined.
+
 
 ## Usage
 Script requires .primitives and .visual files of model to create obj (and mtl) file. You can either specify only primitives file and script will assume visual file is in same folder with same name, but different extension, or you can specify path to visual file separatedly.
