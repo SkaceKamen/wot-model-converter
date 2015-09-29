@@ -525,7 +525,7 @@ with open(filename_primitive, 'rb') as main:
 				if format == 0:
 					objc += "f %d/%d/%d %d/%d/%d %d/%d/%d\n" % (l3,l3,l3,l2,l2,l2,l1,l1,l1)
 				elif format == 1:
-					objc += "f %d %d %d\n" % (l1,l2,l3)
+					objc += "f %d %d %d\n" % (l3,l2,l1)
 				elif format == 2:
 					objc += "f %d//%d %d//%d %d//%d\n" % (l3,l3,l2,l2,l1,l1)
 				elif format == 3:
