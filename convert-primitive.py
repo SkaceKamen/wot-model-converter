@@ -37,7 +37,7 @@ def unpackNormal(packed):
 	}
 
 #new format VN, 0x00 + 8bitZ + 8bitY + 8bitX
-#with inverted VN and f sequence (check reference of flgVerticesLength for detail)
+#with inverted VN and f sequence (check reference of flgNewFormat for detail)
 def unpackNormal_tag3(packed):
 #	pdb.set_trace()
 	pkz = (long(packed) >> 16) & 0xFF ^0xFF
@@ -72,6 +72,9 @@ class vertice:
 	index_1 = 0
 	index_2 = 0
 	index_3 = 0
+	indexB_1 = 0
+	indexB_2 = 0
+	indexB_3 = 0
 	n = None
 	t = None
 	tx = None
@@ -111,8 +114,7 @@ filename_visual = filename_primitive.replace(".primitives", ".visual")
 filename_obj = filename_primitive.replace(".primitives", ".obj")
 filename_mtl = filename_obj.replace(".obj", ".mtl")
 
-flgVerticesLength = 0
-
+flgNewFormat = False
 
 scale_x = 1
 scale_y = 1
@@ -325,15 +327,15 @@ with open(filename_primitive, 'rb') as main:
 		main.seek(section_vertices['position'])
 		
 		vertices_subname = ''
-		i = 0
-		while i < 64:
-			ch = main.read(1)
-			if ord(ch) == 0:
-				break
-			vertices_subname += ch
-			i += 1
-			
-		main.seek(section_vertices['position'] + 64)
+		format_string = ''
+		vertices_subname = str(main.read(64)).split('\x00')[0]
+#set 0.10.0 new format flag			
+		if "BPVT" in vertices_subname:
+			flgNewFormat = True
+			main.read(4)	#null dword used to be vertex length
+			format_string = str(main.read(64)).split('\x00')[0]
+			print 'format_string=' + format_string
+#			pdb.set_trace()
 
 		vertices_count = unpack("I", main.read(4))[0]
 		
@@ -348,14 +350,8 @@ with open(filename_primitive, 'rb') as main:
 		print "subname", vertices_subname, "count", vertices_count, "polys", total_polygons
 		if "xyznuviiiwwtb" in vertices_subname:
 			stride = 37
-		if "BPVTxyznuvtb" in vertices_subname:
-			flgVerticesLength = 68
-			stride = 32
-#			pdb.set_trace()
-		if flgVerticesLength>0:
-			flgVertices = main.read(flgVerticesLength)
-		else:
-			flgVertices = 0x0
+		if format_string == 'set3/xyznuviiiwwtbpc':
+			stride = 40
 			
 		"""
 		@TODO:
@@ -379,6 +375,7 @@ with open(filename_primitive, 'rb') as main:
 			v = 0
 			while v < pos:
 				vert = vertice()
+#				pdb.set_trace()
 				vert.x = unpack('f', main.read(4))[0] * scale_x + transform_x
 				vert.y = unpack('f', main.read(4))[0] * scale_y + transform_y
 				vert.z = unpack('f', main.read(4))[0] * scale_z + transform_z
@@ -390,10 +387,21 @@ with open(filename_primitive, 'rb') as main:
 				if stride == 32:
 					vert.t = unpack('I', main.read(4))[0]
 					vert.bn = unpack('I', main.read(4))[0]
-				else:
-					vert.index_1 = ord(main.read(1))
-					vert.index_2 = ord(main.read(1))
-					vert.index_3 = ord(main.read(1))
+				elif stride == 37:	#old format skinned
+					vert.index_1 = ord(main.read(1))	#bone id for weight1
+					vert.index_2 = ord(main.read(1))	#bone id for weight2
+					vert.index_3 = ord(main.read(1))	#bone id for remaing weight??
+					vert.weight_1 = ord(main.read(1))
+					vert.weight_2 = ord(main.read(1))
+					vert.t = unpack('I', main.read(4))[0]
+					vert.bn = unpack('I', main.read(4))[0]
+				elif stride == 40:	#new format skinned. Data structure is guess work 
+					vert.index_1 = ord(main.read(1))	#bone id for weight1
+					vert.index_2 = ord(main.read(1))	#bone id for weight2
+					vert.index_3 = ord(main.read(1))	#bone id for remaing weight??
+					vert.indexB_1 = ord(main.read(1))	#bone id for weight1 in another primitives
+					vert.indexB_2 = ord(main.read(1))	#bone id for weight2 in another primitives
+					vert.indexB_3 = ord(main.read(1))	#bone id for remaing weight in another primitives
 					vert.weight_1 = ord(main.read(1))
 					vert.weight_2 = ord(main.read(1))
 					vert.t = unpack('I', main.read(4))[0]
@@ -490,7 +498,7 @@ with open(filename_primitive, 'rb') as main:
 				for vertice in group['vertices']:		
 #					if x_cnt == 395:
 #						pdb.set_trace()
-					if flgVerticesLength > 0:	#v0.10.0 test server 
+					if flgNewFormat: 
 						n = unpackNormal_tag3(vertice.n)
 					else:				
 						n = unpackNormal(vertice.n)
@@ -518,7 +526,7 @@ with open(filename_primitive, 'rb') as main:
 				l2 = total_vertices + indicie['v2'] + 1 - group['startVertex']
 				l3 = total_vertices + indicie['v3'] + 1 - group['startVertex']
 				
-				if stride == 37: #skinned primitives before 0.9.10 need to invert face vertex sequence
+				if stride == 37 or stride == 40: #skinned primitives need to invert face vertex sequence
 					lx = l1
 					l1 = l3
 					l3 = lx
