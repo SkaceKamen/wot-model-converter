@@ -113,12 +113,7 @@ parser.add_argument('-nm','--nomtl', dest='no_mtl', help='don\'t output material
 parser.add_argument('-nvt','--novt', dest='no_vt', help='don\'t output UV coordinates', action='store_true')
 parser.add_argument('-nvn','--novn', dest='no_vn', help='don\'t output normals', action='store_true')
 
-class santa:
-	a='alpha'
-	b='beta'
-
 def main(filename_primitive):
-	in_santa = santa()
 	ver2 = Vertice()
 	flag_skinned = False
 #	pdb.set_trace()
