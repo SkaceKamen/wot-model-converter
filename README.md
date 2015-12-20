@@ -5,8 +5,8 @@ Converts World of Tanks models to wavefront obj format.
 * script only parse diffuse textures
 * all primitive groups are packed into one single obj file at this time
 * skinned weight can be extracted but not supported by wavefront obj. Another branch for FBX/DAE exporter would be necessary.
-* support new primitives variant used in leaked WoT v0.10.0 HD models. Live server compatibility remain to be examined.
-
+* support new primitives variant used in WoT v0.9.12+ HD models. 
+* model mirroring is adapt to standard WG models. Results for models built by other parties are not guaranteed.
 
 ## Usage
 Script requires .primitives and .visual files of model to create obj (and mtl) file. You can either specify only primitives file and script will assume visual file is in same folder with same name, but different extension, or you can specify path to visual file separatedly.
@@ -21,7 +21,7 @@ usage: convert-primitive.py [-h] [-v VISUAL] [-o OBJ] [-m MTL] [-t TEXTURES]
 Converts BigWorld primitives file to obj.
 
 positional arguments:
-  input                 primitives file path
+  input                 primitives file path (wildcard accepted)
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -51,8 +51,10 @@ optional arguments:
 
 ## Example
 ```convert-primitive.py -o Hull.obj Hull.primitives```
-
 will output 'Hull.obj' with all model data and 'Hull.mtl' with materials
+
+```convert-primitive.py *.primitives_processed```
+will process all primitives_processed files and output .obj under current folder.
 
 ## Requirements
 Python 2.7
