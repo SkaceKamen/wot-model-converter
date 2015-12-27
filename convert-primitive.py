@@ -114,8 +114,7 @@ parser.add_argument('-nvt','--novt', dest='no_vt', help='don\'t output UV coordi
 parser.add_argument('-nvn','--novn', dest='no_vn', help='don\'t output normals', action='store_true')
 
 def main(filename_primitive):
-	ver2 = Vertice()
-	flag_skinned = False
+	flgSkinned = False
 #	pdb.set_trace()
 	filename = filename_primitive.split('.primitives')[0]
 	filename_visual = filename_primitive.replace('.primitives','.visual')
@@ -363,7 +362,7 @@ def main(filename_primitive):
 			if "xyznuviiiwwtb" in vertices_subname:
 				stride = 37
 			if 'iiiww' in format_string:
-				flag_skinned = True
+				flgSkinned = True
 			if format_string == 'set3/xyznuviiiwwtbpc':
 				stride = 40
 				
@@ -396,7 +395,7 @@ def main(filename_primitive):
 					vert.n = unpack('I', mainFP.read(4))[0]
 					vert.u = unpack('f', mainFP.read(4))[0]
 					vert.v = unpack('f', mainFP.read(4))[0]
-					if MIRROR_ENABLED and not flag_skinned:
+					if MIRROR_ENABLED and not flgSkinned:
 						vert.x = - vert.x
 				
 					if stride == 32:
@@ -521,14 +520,14 @@ def main(filename_primitive):
 							n = unpackNormal_tag3(vertice.n)
 						else:				
 							n = unpackNormal(vertice.n)
-						if MIRROR_ENABLED and not flag_skinned:
+						if MIRROR_ENABLED and not flgSkinned:
 							n['x'] = -n['x']
 						objc += "vn %f %f %f\n" % (n['x'],n['y'],n['z'])
 						x_cnt += 1
 				
 				if output_vt:
 					for vertice in group['vertices']:
-						objc += "vt %f %f 0.0\n" % (vertice.u, -vertice.v)
+						objc += "vt %f %f 0.0\n" % (vertice.u, 1-vertice.v)
 					
 				if output_material:
 					objc += "usemtl %s\n" % material_name
@@ -547,7 +546,7 @@ def main(filename_primitive):
 					l2 = total_vertices + indicie['v2'] + 1 - group['startVertex']
 					l3 = total_vertices + indicie['v3'] + 1 - group['startVertex']
 					
-					if flag_skinned: #skinned primitives need to invert face vertex sequence
+					if flgSkinned: #skinned primitives need to invert face vertex sequence
 						lx = l1
 						l1 = l3
 						l3 = lx
