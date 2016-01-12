@@ -131,9 +131,9 @@ class XmlUnpacker:
 		str = ''
 		while True:
 			c = self.stream.read(1)
-			if c[0] == 0:
+			if ord(c) == 0:
 				break
-			str = str + c.decode('UTF-8')
+			str = str + c.decode('UTF-8', errors='ignore')
 		return str
 
 	def isPacked(self):

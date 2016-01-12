@@ -306,9 +306,9 @@ def main(filename_primitive):
 			i = 0
 			while i < 64:
 				ch = mainFP.read(1)
-				if ch[0] == 0:
+				if ord(ch) == 0:
 					break
-				indicies_subname += ch.decode('UTF-8')
+				indicies_subname += ch.decode('UTF-8', errors='ignore')
 				i += 1
 			
 			mainFP.seek(section_indicies['position'] + 64)
