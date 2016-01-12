@@ -2,7 +2,7 @@ from struct import unpack
 from xml.etree import ElementTree as ET
 import base64
 class XmlUnpacker:
-	PACKED_HEADER = 1654738501
+	PACKED_HEADER = 0x62a14e45
 	stream = None
 	dict = []
 	debug = False
@@ -19,7 +19,7 @@ class XmlUnpacker:
 			return root
 		else:
 			stream.seek(0)
-			tree = ET.fromstring(stream.read())
+			tree = ET.fromstring(stream.read().decode('UTF-8'))
 			return tree
 
 	def readElement(self, base):
@@ -74,7 +74,7 @@ class XmlUnpacker:
 		if length == 0:
 			return ''
 		else:
-			return self.stream.read(length)
+			return self.stream.read(length).decode('UTF-8')
 
 	def readNumber(self, length):
 		if length == 0:
@@ -114,7 +114,7 @@ class XmlUnpacker:
 			raise Exception('Boolean with wrong length.')
 
 	def readBase64(self, length):
-		return base64.b64encode(self.stream.read(length))
+		return base64.b64encode(self.stream.read(length)).decode('UTF-8')
 
 	def readDictionary(self):
 		self.stream.seek(5)
@@ -131,9 +131,9 @@ class XmlUnpacker:
 		str = ''
 		while True:
 			c = self.stream.read(1)
-			if ord(c) == 0:
+			if c[0] == 0:
 				break
-			str = str + c
+			str = str + c.decode('UTF-8')
 		return str
 
 	def isPacked(self):

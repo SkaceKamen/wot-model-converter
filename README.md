@@ -57,4 +57,4 @@ will output 'Hull.obj' with all model data and 'Hull.mtl' with materials
 will process all primitives_processed files and output .obj under current folder.
 
 ## Requirements
-Python 2.7
+Python 2.7 - 3.5
