@@ -116,10 +116,12 @@ parser.add_argument('-nvn','--novn', dest='no_vn', help='don\'t output normals',
 def main(filename_primitive):
 	flgSkinned = False
 #	pdb.set_trace()
-	filename = filename_primitive.split('.primitives')[0]
-	filename_visual = filename_primitive.replace('.primitives','.visual')
-	filename_obj = filename + '.obj'
-	filename_mtl = filename + '.mtl'
+	filename = os.path.splitext(filename_primitive)[0]
+	filename_visual	= '%s.visual' % filename
+	if filename_primitive.endswith('_processed'):
+		filename_visual	+= '_processed'
+	filename_obj = '%.obj' % filename
+	filename_mtl = '%.mtl' % filename
 	
 	flgNewFormat = False
 	
@@ -174,7 +176,7 @@ def main(filename_primitive):
 		
 	for fpath in (filename_primitive, filename_visual):
 		if not os.path.exists(fpath):
-			print "Failed to find %s" % fpath
+			print("Failed to find %s" % fpath)
 			sys.exit(1)
 
 
@@ -245,7 +247,7 @@ def main(filename_primitive):
 			section_name_length = unpack('I', data)[0]
 			section_name = mainFP.read(section_name_length)
 		
-			print "Section", "[" + section_name + "]"
+			print("Section [ %s ]" % section_name)
 		
 			if 'vertices' in section_name:
 				sub_groups += 1
@@ -345,7 +347,7 @@ def main(filename_primitive):
 				flgNewFormat = True
 				mainFP.read(4)	#null dword used to be vertex length
 				format_string = str(mainFP.read(64)).split('\x00')[0]
-				print 'format_string=' + format_string
+				print('format_string=%s' % format_string)
 	#			pdb.set_trace()
 	
 			vertices_count = unpack("I", mainFP.read(4))[0]
@@ -358,7 +360,7 @@ def main(filename_primitive):
 			for group in pGroups:
 				total_polygons += group['nPrimitives']
 			
-			print "subname", vertices_subname, "count", vertices_count, "polys", total_polygons
+			print( "subname = %s\ncount = %s\npolys = %s" % (vertices_subname, vertices_count, total_polygons) )
 			if "xyznuviiiwwtb" in vertices_subname:
 				stride = 37
 			if 'iiiww' in format_string:
@@ -583,6 +585,6 @@ def main(filename_primitive):
 				
 args = parser.parse_args()
 for fname in glob(args.input):
-	print '\nprocessing '+fname
+	print('\nprocessing %s' % fname)
 	main(fname)
 
