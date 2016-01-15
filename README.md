@@ -9,7 +9,7 @@ Converts World of Tanks models to wavefront obj format.
 * model mirroring is adapt to standard WG models. Results for models built by other parties are not guaranteed.
 
 ## Usage
-Script requires .primitives and .visual files of model to create obj (and mtl) file. You can either specify only primitives file and script will assume visual file is in same folder with same name, but different extension, or you can specify path to visual file separatedly.
+Script requires .primitives and .visual files (or .primitives_processed and .visual_processed in case of WoT 0.9.10+) of model to create obj (and mtl) file. You can either specify only primitives file and script will assume visual file is in same folder with same name, but different extension, or you can specify path to visual file separatedly.
 Script can compress result obj and mtl files using zlib.
 ```
 usage: convert-primitive.py [-h] [-v VISUAL] [-o OBJ] [-m MTL] [-t TEXTURES]
