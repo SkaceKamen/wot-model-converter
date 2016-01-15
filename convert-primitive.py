@@ -6,7 +6,7 @@ import sys
 import argparse
 import os
 import zlib
-import ctypes
+from ctypes import c_long
 import wot
 from struct import unpack
 from glob import glob
@@ -45,9 +45,9 @@ class Vertice:
 #old format VN, 10bit+11bit+11bit as z+y+x
 def unpackNormal(packed):
 #	pdb.set_trace()
-	pkz = (long(packed) >> 22) & 0x3FF
-	pky = (long(packed) >> 11) & 0x7FF
-	pkx = (long(packed)) & 0x7FF
+	pkz = (c_long(packed).value >> 22) & 0x3FF
+	pky = (c_long(packed).value >> 11) & 0x7FF
+	pkx = (c_long(packed).value) & 0x7FF
 	
 	if pkx > 0x3ff:
 		x = - float((pkx & 0x3ff ^ 0x3ff)+1)/0x3ff
@@ -71,9 +71,9 @@ def unpackNormal(packed):
 #with inverted VN and f sequence (check reference of flgNewFormat for detail)
 def unpackNormal_tag3(packed):
 #	pdb.set_trace()
-	pkz = (long(packed) >> 16) & 0xFF ^0xFF
-	pky = (long(packed) >> 8) & 0xFF ^0xFF
-	pkx = (long(packed)   ) & 0xFF ^0xFF
+	pkz = (c_long(packed).value >> 16) & 0xFF ^0xFF
+	pky = (c_long(packed).value >> 8) & 0xFF ^0xFF
+	pkx = (c_long(packed).value   ) & 0xFF ^0xFF
 	
 	if pkx > 0x7f:
 		x = - float(pkx & 0x7f )/0x7f
@@ -116,10 +116,12 @@ parser.add_argument('-nvn','--novn', dest='no_vn', help='don\'t output normals',
 def main(filename_primitive):
 	flgSkinned = False
 #	pdb.set_trace()
-	filename = filename_primitive.split('.primitives')[0]
-	filename_visual = filename_primitive.replace('.primitives','.visual')
-	filename_obj = filename + '.obj'
-	filename_mtl = filename + '.mtl'
+	filename = os.path.splitext(filename_primitive)[0]
+	filename_visual	= '%s.visual' % filename
+	if filename_primitive.endswith('_processed'):
+		filename_visual	+= '_processed'
+	filename_obj = '%s.obj' % filename
+	filename_mtl = '%s.mtl' % filename
 	
 	flgNewFormat = False
 	
@@ -174,7 +176,7 @@ def main(filename_primitive):
 		
 	for fpath in (filename_primitive, filename_visual):
 		if not os.path.exists(fpath):
-			print "Failed to find %s" % fpath
+			print("Failed to find %s" % fpath)
 			sys.exit(1)
 
 
@@ -243,9 +245,9 @@ def main(filename_primitive):
 				break
 			
 			section_name_length = unpack('I', data)[0]
-			section_name = mainFP.read(section_name_length)
+			section_name = mainFP.read(section_name_length).decode('UTF-8')
 		
-			print "Section", "[" + section_name + "]"
+			print("Section [ %s ]" % section_name)
 		
 			if 'vertices' in section_name:
 				sub_groups += 1
@@ -286,6 +288,7 @@ def main(filename_primitive):
 		
 			name_vertices = visual_name_list[(sg - sub_groups)][0].strip()
 			name_indicies = visual_name_list[(sg - sub_groups)][1].strip()
+
 			ind_scale = 2
 			stride = 32
 		
@@ -305,7 +308,7 @@ def main(filename_primitive):
 				ch = mainFP.read(1)
 				if ord(ch) == 0:
 					break
-				indicies_subname += ch
+				indicies_subname += ch.decode('UTF-8', errors='ignore')
 				i += 1
 			
 			mainFP.seek(section_indicies['position'] + 64)
@@ -339,13 +342,13 @@ def main(filename_primitive):
 		
 			vertices_subname = ''
 			format_string = ''
-			vertices_subname = str(mainFP.read(64)).split('\x00')[0]
+			vertices_subname = mainFP.read(64).split(b'\x00')[0].decode('UTF-8')
 	#set 0.10.0 new format flag			
 			if "BPVT" in vertices_subname:
 				flgNewFormat = True
 				mainFP.read(4)	#null dword used to be vertex length
-				format_string = str(mainFP.read(64)).split('\x00')[0]
-				print 'format_string=' + format_string
+				format_string = mainFP.read(64).split(b'\x00')[0].decode('UTF-8')
+				print('format_string=%s' % format_string)
 	#			pdb.set_trace()
 	
 			vertices_count = unpack("I", mainFP.read(4))[0]
@@ -358,7 +361,7 @@ def main(filename_primitive):
 			for group in pGroups:
 				total_polygons += group['nPrimitives']
 			
-			print "subname", vertices_subname, "count", vertices_count, "polys", total_polygons
+			print( "subname = %s\ncount = %s\npolys = %s" % (vertices_subname, vertices_count, total_polygons) )
 			if "xyznuviiiwwtb" in vertices_subname:
 				stride = 37
 			if 'iiiww' in format_string:
@@ -573,16 +576,16 @@ def main(filename_primitive):
 			objc = zlib.compress(objc)
 			mtlc = zlib.compress(mtlc)
 		
-		with open(filename_obj, 'wb') as fobj:
+		with open(filename_obj, 'w') as fobj:
 			fobj.write(objc)
 			
 		if output_material:
-			with open(filename_mtl, 'wb') as fmtl:
+			with open(filename_mtl, 'w') as fmtl:
 				fmtl.write(mtlc)
 				
 				
 args = parser.parse_args()
 for fname in glob(args.input):
-	print '\nprocessing '+fname
+	print('\nprocessing %s' % fname)
 	main(fname)
 
