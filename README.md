@@ -7,6 +7,10 @@ Converts World of Tanks models to wavefront obj format.
 * skinned weight can be extracted but not supported by wavefront obj. Another branch for FBX/DAE exporter would be necessary.
 * support new primitives variant used in WoT v0.9.12+ HD models. 
 * model mirroring is adapt to standard WG models. Results for models built by other parties are not guaranteed.
+* 
+
+## Additional credits (not mentioned on github)
+Thanks to Phux_and_the_Wheel_Bearing (AKA Coffee_), from whose code this script originates
 
 ## Usage
 Script requires .primitives and .visual files (or .primitives_processed and .visual_processed in case of WoT 0.9.10+) of model to create obj (and mtl) file. You can either specify only primitives file and script will assume visual file is in same folder with same name, but different extension, or you can specify path to visual file separatedly.
