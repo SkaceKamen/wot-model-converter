@@ -2,8 +2,8 @@
 Thanks Coffee_ for cooperative work on this format, he did most of the hard work
 """
 
-import StringIO
-from chunks import *
+from io import BytesIO
+from wot.chunks import *
 from struct import unpack
 
 class SpaceReader:
@@ -53,7 +53,7 @@ class MapSpace:
 		self.chunks[ident.lower()] = contents
 		
 	def getChunk(self, ident):
-		return StringIO.StringIO(self.chunks.get(ident))
+		return BytesIO(self.chunks.get(ident))
 		
 	def getMatrices(self):
 		return bsmi.get(self.getChunk("bsmi"), self.debug)

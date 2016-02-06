@@ -138,11 +138,11 @@ class OBJModelWriter(ModelWriter):
 			mtlc = zlib.compress(mtlc)
 		
 		# Save to result filename
-		with open(filename, "wb") as f:
+		with open(filename, "wb" if self.compress else "w") as f:
 			f.write(objc)
 		
 		if self.material:
-			with open(filename_material, "wb") as f:
+			with open(filename_material, "wb" if self.compress else "w") as f:
 				f.write(mtlc)
 			
 		return filename, filename_material

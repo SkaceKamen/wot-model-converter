@@ -1,5 +1,5 @@
-from utility import *
-from table import Table
+from wot.chunks.utility import *
+from wot.chunks.table import Table
 
 def get(f, debug=False):
 	table = Table(f, debug, "Matrices")

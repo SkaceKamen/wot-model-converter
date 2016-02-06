@@ -1,4 +1,4 @@
-from utility import *
+from wot.chunks.utility import *
 
 def get(f, debug=False):
 	strings = {}

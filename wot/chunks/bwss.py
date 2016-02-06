@@ -1,4 +1,4 @@
-from utility import *
+from wot.chunks.utility import *
 
 def get(f, strings, debug=False):
 	table = read_table(f)
@@ -6,7 +6,7 @@ def get(f, strings, debug=False):
 	
 	for item in table["entries"]:
 		ints = unpack("<" + ("I" * (table["entry_size"]//4)), item)
-		print [ hex2(v, 8) for v in ints ]
+		print([ hex2(v, 8) for v in ints ])
 			
 		index = 0
 		for i in ints:
@@ -28,7 +28,7 @@ def get(f, strings, debug=False):
 	
 	for item in table["entries"]:
 		ints = unpack("<" + ("I" * (table["entry_size"]//4)), item)
-		print [ hex2(v, 8) for v in ints ]
+		print([ hex2(v, 8) for v in ints ])
 			
 		index = 0
 		for i in ints:
@@ -43,7 +43,7 @@ def get(f, strings, debug=False):
 	
 	for item in table["entries"]:
 		ints = unpack("<" + ("I" * (table["entry_size"]//4)), item)
-		print [ hex2(v, 8) for v in ints ]
+		print([ hex2(v, 8) for v in ints ])
 			
 		index = 0
 		for i in ints:
@@ -58,7 +58,7 @@ def get(f, strings, debug=False):
 	
 	for item in table["entries"]:
 		ints = unpack("<" + ("B" * (table["entry_size"])), item)
-		print " ".join([ hex2(v, 2) for v in ints ])
+		print(" ".join([ hex2(v, 2) for v in ints ]))
 			
 		index = 0
 		for i in ints:
@@ -73,7 +73,7 @@ def get(f, strings, debug=False):
 	
 	for item in table["entries"]:
 		ints = unpack("<" + ("B" * (table["entry_size"])), item)
-		print " ".join([ hex2(v, 2) for v in ints ])
+		print(" ".join([ hex2(v, 2) for v in ints ]))
 			
 		index = 0
 		for i in ints:
@@ -88,12 +88,12 @@ def get(f, strings, debug=False):
 	
 	for item in table["entries"]:
 		ints = unpack("<" + ("B" * (table["entry_size"])), item)
-		print " ".join([ hex2(v, 2) for v in ints ])
+		print(" ".join([ hex2(v, 2) for v in ints ]))
 			
 		index = 0
 		for i in ints:
 			if i in strings:
-				print (index, strings[i])
+				print(index, strings[i])
 			index += 1
 	
 	print ("position", hex2(f.tell()))
@@ -103,7 +103,7 @@ def get(f, strings, debug=False):
 	
 	for item in table["entries"]:
 		ints = unpack("<" + ("I" * (table["entry_size"] // 4)), item)
-		print " ".join([ hex2(v, 8) for v in ints ])
+		print(" ".join([ hex2(v, 8) for v in ints ]))
 			
 		index = 0
 		for i in ints:

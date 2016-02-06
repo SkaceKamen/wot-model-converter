@@ -60,7 +60,7 @@ class PackageReader:
 				return
 		
 		# Walk all packages
-		for name, pack in self.packages.iteritems():
+		for name, pack in self.packages.items():
 			
 			# In case some unusual symbols are present in name
 			try:
@@ -102,7 +102,7 @@ class PackageReader:
 		
 	def warn(self, text):
 		"""Prints some kind of warning."""
-		print "Warning: " + str(text)
+		print("Warning: %s" % str(text))
 		
 	def loadPackageList(self):
 		"""Loads paths to all avaible packages"""
@@ -234,7 +234,7 @@ class PackageReader:
 			yield "/".join(package)
 			
 		# Iter path now
-		for key,item in package.iteritems():
+		for key,item in package.items():
 			if not isinstance(item, list):
 				# Return file path
 				yield "/".join(package) + "/" + key

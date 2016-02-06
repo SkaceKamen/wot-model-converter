@@ -4,11 +4,10 @@ and writing original script that did the unpacking. This is
 just rewritten script to python.
 """
 
-from XmlUnpacker import XmlUnpacker
+from wot.XmlUnpacker import XmlUnpacker
 import xml.etree.ElementTree as ET
 from struct import unpack
-import os.path
-import StringIO
+from io import BytesIO
 
 def unp(format, data):
 	return unpack(format, data)[0]
@@ -21,7 +20,7 @@ class ModelReader:
 	
 	def out(self, text):
 		if self.debug:
-			print text
+			print(text)
 	
 	def read(self, primitives_fh, visual_fh):
 		# Read visual file
@@ -60,7 +59,7 @@ class ModelReader:
 			
 			# Read section name
 			section_name_length = unp("I", f.read(4))
-			section_name = f.read(section_name_length)
+			section_name = f.read(section_name_length).decode("UTF-8")
 			
 			# Section informations
 			section = {
@@ -83,9 +82,9 @@ class ModelReader:
 				f.read(4 - section_name_length % 4)
 		
 		# Read sections data
-		for name, section in sections.iteritems():
+		for name, section in sections.items():
 			f.seek(section["position"])
-			section['data'] = StringIO.StringIO(f.read(section["size"]))
+			section['data'] = BytesIO(f.read(section["size"]))
 		
 		# Read visual data
 		nodes = {}
@@ -178,12 +177,12 @@ class ModelReader:
 		
 		vertices = []
 
-		type = str(data.read(64)).split('\x00')[0]
+		type = data.read(64).decode("UTF-8").split('\x00')[0]
 		subtype = None
 		count = unp("I", data.read(4))
 		
 		if "BPVT" in type:
-			subtype = str(data.read(64)).split('\x00')[0]
+			subtype = data.read(64).decode("UTF-8").split('\x00')[0]
 			count = unp("I", data.read(4))
 		
 		self.out("type %s subtype %s count %d stride %d" % (type, subtype, count, self.getStride(type, subtype)))
@@ -246,9 +245,9 @@ class ModelReader:
 	def readNormal(self, data, type, subtype):
 		packed = unp("I", data.read(4))
 		if "set3" in subtype:
-			pkz = (long(packed) >> 16) & 0xFF ^0xFF
-			pky = (long(packed) >> 8) & 0xFF ^0xFF
-			pkx = (long(packed)   ) & 0xFF ^0xFF
+			pkz = (int(packed) >> 16) & 0xFF ^0xFF
+			pky = (int(packed) >> 8) & 0xFF ^0xFF
+			pkx = (int(packed)   ) & 0xFF ^0xFF
 			
 			if pkx > 0x7f:
 				x = - float(pkx & 0x7f )/0x7f
@@ -264,9 +263,9 @@ class ModelReader:
 				z =   float(pkz ^ 0x7f)/0x7f
 			return (x,y,z)
 		else:
-			pkz = (long(packed) >> 22) & 0x3FF
-			pky = (long(packed) >> 11) & 0x7FF
-			pkx = (long(packed)) & 0x7FF
+			pkz = (int(packed) >> 22) & 0x3FF
+			pky = (int(packed) >> 11) & 0x7FF
+			pkx = (int(packed)) & 0x7FF
 			
 			if pkx > 0x3ff:
 				x = - float((pkx & 0x3ff ^ 0x3ff)+1)/0x3ff
@@ -290,7 +289,7 @@ class ModelReader:
 		groups = []
 		
 		# Read type (ended by 0)
-		type = str(data.read(64)).split('\x00')[0]
+		type = data.read(64).decode("UTF-8", "ignore").split('\x00')[0]
 		
 		# One indice length
 		stride = 2

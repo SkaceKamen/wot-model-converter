@@ -1,8 +1,8 @@
-from utility import *
+from wot.chunks.utility import *
 
 def get(f, strings, materials, bwsg, matrices, debug=False):
 	if debug:
-		print "1.Table - Nodes ranges"
+		print("1.Table - Nodes ranges")
 	
 	"""
 	NODES RANGES TABLE
@@ -26,7 +26,7 @@ def get(f, strings, materials, bwsg, matrices, debug=False):
 		})
 	
 	if debug:
-		print "2.Table - models"
+		print("2.Table - models")
 	
 	"""
 	MODELS TABLE
@@ -67,12 +67,12 @@ def get(f, strings, materials, bwsg, matrices, debug=False):
 		models.append(info)
 		
 		if debug:
-			print index, info["name"], info["from"], info["to"]
+			print(index, info["name"], info["from"], info["to"])
 		
 		index += 1
 		
 	if debug:
-		print "3.Table"
+		print("3.Table")
 	
 	"""
 	PURPOSE UNKNOWN
@@ -89,10 +89,10 @@ def get(f, strings, materials, bwsg, matrices, debug=False):
 	
 	for item in table["entries"]:
 		if debug:
-			print [ hex2(v, 8) for v in unpack("<" + ("I" * (table["entry_size"]//4)), item) ]
+			print([ hex2(v, 8) for v in unpack("<" + ("I" * (table["entry_size"]//4)), item) ])
 	
 	if debug:
-		print "4.Table - Bounding boxes"
+		print("4.Table - Bounding boxes")
 	
 	"""
 	BOUDING BOXES TABLE
@@ -116,7 +116,7 @@ def get(f, strings, materials, bwsg, matrices, debug=False):
 		index += 1
 	
 	if debug:
-		print "5.Table"
+		print("5.Table")
 	
 	"""
 	UKNOWN TABLE
@@ -133,10 +133,10 @@ def get(f, strings, materials, bwsg, matrices, debug=False):
 		ints = unpack("<" + ("I" * (table["entry_size"]//4)), item)
 		
 		if debug:
-			print [ hex2(v, 8) for v in ints ]
+			print([ hex2(v, 8) for v in ints ])
 	
 	if debug:
-		print "6.Table - Nodes"
+		print("6.Table - Nodes")
 	
 	"""
 	NODES TABLE
@@ -157,7 +157,7 @@ def get(f, strings, materials, bwsg, matrices, debug=False):
 		ints = unpack("<" + ("I" * (table["entry_size"]//4)), item)
 		
 		if debug:
-			print [ hex2(v, 8) for v in ints ]
+			print([ hex2(v, 8) for v in ints ])
 		
 		nodes.append({
 			"from": ints[0],
@@ -165,7 +165,7 @@ def get(f, strings, materials, bwsg, matrices, debug=False):
 		})
 
 	if debug:
-		print "7.Table - Primitive groups"
+		print("7.Table - Primitive groups")
 	
 	"""
 	PRIMITIVE GROUPS
@@ -210,13 +210,13 @@ def get(f, strings, materials, bwsg, matrices, debug=False):
 		groups.append(info)
 		
 		if debug:
-			print [ hex2(v, 8) for v in ints ]	
-			print index, info["vertices"], info["indicies"]
+			print([ hex2(v, 8) for v in ints ])
+			print(index, info["vertices"], info["indicies"])
 		
 		index += 1
 	
 	if debug:
-		print "8.Table"
+		print("8.Table")
 	
 	"""
 	UNKNOWN
@@ -230,28 +230,10 @@ def get(f, strings, materials, bwsg, matrices, debug=False):
 	for item in table["entries"]:
 		ints = unpack("<" + ("I" * (table["entry_size"]//4)), item)
 		if debug:
-			print [ hex2(v, 8) for v in ints ]
+			print([ hex2(v, 8) for v in ints ])
 	
 	if debug:
-		print "9.Table"
-	
-	"""
-	UNKNOWN
-	"""
-	
-	table = read_table(f)
-	
-	if debug:
-		print_table(table)
-	
-	for item in table["entries"]:
-		ints = unpack("<" + ("I" * (table["entry_size"]//4)), item)
-		
-		if debug:
-			print [ hex2(v, 8) for v in ints ]
-	
-	if debug:
-		print "10.Table"
+		print("9.Table")
 	
 	"""
 	UNKNOWN
@@ -266,10 +248,10 @@ def get(f, strings, materials, bwsg, matrices, debug=False):
 		ints = unpack("<" + ("I" * (table["entry_size"]//4)), item)
 		
 		if debug:
-			print [ hex2(v, 8) for v in ints ]
+			print([ hex2(v, 8) for v in ints ])
 	
 	if debug:
-		print "11.Table"
+		print("10.Table")
 	
 	"""
 	UNKNOWN
@@ -284,10 +266,28 @@ def get(f, strings, materials, bwsg, matrices, debug=False):
 		ints = unpack("<" + ("I" * (table["entry_size"]//4)), item)
 		
 		if debug:
-			print [ hex2(v, 8) for v in ints ]
+			print([ hex2(v, 8) for v in ints ])
 	
 	if debug:
-		print ("position", hex2(f.tell()))
+		print("11.Table")
+	
+	"""
+	UNKNOWN
+	"""
+	
+	table = read_table(f)
+	
+	if debug:
+		print_table(table)
+	
+	for item in table["entries"]:
+		ints = unpack("<" + ("I" * (table["entry_size"]//4)), item)
+		
+		if debug:
+			print([ hex2(v, 8) for v in ints ])
+	
+	if debug:
+		print("position", hex2(f.tell()))
 	
 	index = 0
 	for model in models:

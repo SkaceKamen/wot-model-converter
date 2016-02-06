@@ -1,5 +1,5 @@
-from utility import *
-import StringIO
+from wot.chunks.utility import *
+from io import BytesIO
 
 def get(f, debug=False):
 	strings_table = read_table(f)
@@ -101,7 +101,7 @@ def get(f, debug=False):
 			
 			if block["type"] == 0:
 				vertices = []
-				main = StringIO.StringIO(block["data"])
+				main = BytesIO(block["data"])
 				stride = block["stride"]
 				
 				for i in xrange(model["vertex_count"]):
@@ -160,9 +160,7 @@ def get(f, debug=False):
 				for i in range(model["position_from"], model["position_to"]):
 					position = positions[i]
 					f.seek(raw_position + chunks[position["chunk"]]["position"] + position["position"])
-					print "POS", position["size"]
 					out.write(f.read(position["size"]))
-			print model["name"], os.path.getsize("vertices/" + str(model["name"]))
 		
 	return results
 	

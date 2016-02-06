@@ -1,5 +1,5 @@
 from struct import unpack
-from utility import hex2
+from wot.chunks.utility import hex2
 
 class Table:
 	handle = None

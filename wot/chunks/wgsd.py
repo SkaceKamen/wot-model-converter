@@ -1,4 +1,4 @@
-from utility import *
+from wot.chunks.utility import *
 
 def get(f, bwst, debug=False):
 	table = read_table(f)
@@ -31,7 +31,7 @@ def get(f, bwst, debug=False):
 	for item in table["entries"]:
 		ints = unpack("<" + ("I" * (table["entry_size"]//4)), item)
 		if debug:
-			print [ hex2(v, 8) for v in ints ]
+			print([ hex2(v, 8) for v in ints ])
 	
 	
 	return decals

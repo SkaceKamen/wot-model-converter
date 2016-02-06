@@ -3,6 +3,7 @@
 import argparse
 import wot
 import os
+import sys
 from glob import glob	
 
 # Initialize command line arguments
@@ -65,7 +66,7 @@ if args.no_vn:
 
 if args.silent:
 	silent = True
-
+	
 # Load each input file
 for filename_primitive in glob(args.input):
 	# Print progress if allowed

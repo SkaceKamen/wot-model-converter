@@ -93,7 +93,7 @@ class XmlUnpacker:
 		if length == 0:
 			return ''
 		
-		return self.stream.read(length)
+		return self.stream.read(length).decode("UTF-8")
 	
 	def readNumber(self, length):
 		if length == 0:
@@ -136,7 +136,7 @@ class XmlUnpacker:
 			raise Exception("Boolean with wrong length.")
 			
 	def readBase64(self, length):
-		return base64.b64encode(self.stream.read(length))
+		return base64.b64encode(self.stream.read(length)).decode("UTF-8")
 	
 	def readDictionary(self):
 		self.stream.seek(5);
@@ -157,7 +157,7 @@ class XmlUnpacker:
 			c = self.stream.read(1)
 			if ord(c) == 0:
 				break;
-			str += c
+			str += c.decode("UTF-8")
 		return str
 		
 	def isPacked(self):
