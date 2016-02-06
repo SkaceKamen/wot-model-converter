@@ -7,7 +7,6 @@ Converts World of Tanks models to wavefront obj format.
 * skinned weight can be extracted but not supported by wavefront obj. Another branch for FBX/DAE exporter would be necessary.
 * support new primitives variant used in WoT v0.9.12+ HD models. 
 * model mirroring is adapt to standard WG models. Results for models built by other parties are not guaranteed.
-* 
 
 ## Additional credits (not mentioned on github)
 Thanks to Phux_and_the_Wheel_Bearing (AKA Coffee_), from whose code this script originates
@@ -61,4 +60,4 @@ will output 'Hull.obj' with all model data and 'Hull.mtl' with materials
 will process all primitives_processed files and output .obj under current folder.
 
 ## Requirements
-Python 2.7 - 3.5
+Python 2.7
