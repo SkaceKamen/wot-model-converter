@@ -56,6 +56,9 @@ optional arguments:
 ```convert-primitive.py -o Hull.obj Hull.primitives```
 will output 'Hull.obj' with all model data and 'Hull.mtl' with materials
 
+```convert-primitive.py -f collada -o Hull.dae Hull.primitives```
+will output 'Hull.dae'
+
 ```convert-primitive.py *.primitives_processed```
 will process all primitives_processed files and output .obj under current folder.
 
