@@ -1,10 +1,14 @@
 import zlib
 
-class ModelWriter(object):	
+class ModelWriter(object):
+	ext = ""
+
 	def write(self, primitive, filename):
 		pass
 		
 class OBJModelWriter(ModelWriter):
+	ext = ".obj"
+
 	material = False
 	
 	normals = False

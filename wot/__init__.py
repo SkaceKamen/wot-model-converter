@@ -2,6 +2,7 @@ from wot.PackageReader import PackageReader
 from wot.XmlUnpacker import XmlUnpacker
 from wot.ModelReader import ModelReader
 from wot.ModelWriter import OBJModelWriter
+from wot.ColladaModelWriter import ColladaModelWriter
 from wot.SpaceReader import SpaceReader
 from wot.TreesReader import TreesReader
 

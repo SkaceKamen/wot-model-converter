@@ -2,6 +2,8 @@ import zlib
 from ModelWriter import ModelWriter
 
 class ColladaModelWriter(ModelWriter):
+	ext = ".dae"
+	
 	material = False
 	
 	normals = False

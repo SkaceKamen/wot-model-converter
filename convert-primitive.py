@@ -6,12 +6,18 @@ import os
 import sys
 from glob import glob	
 
+# Supported formats and their classes
+supported_formats = {
+	"obj": wot.OBJModelWriter,
+	"collada": wot.ColladaModelWriter
+}
+
 # Initialize command line arguments
 parser = argparse.ArgumentParser(description='Converts BigWorld primitives file to obj.')
 parser.add_argument('input', help='primitives file path')
 parser.add_argument('-v','--visual', dest='visual', help='visual file path')
-parser.add_argument('-o','--obj', dest='obj', help='result obj path')
-parser.add_argument('-m','--mtl', dest='mtl', help='result mtl path')
+parser.add_argument('-o','--output', dest='obj', help='result file path')
+parser.add_argument('-m','--mtl', dest='mtl', help='result mtl path (only for obj format)')
 parser.add_argument('-t','-t', dest='textures', help='path to textures')
 parser.add_argument('-sx','--scalex', dest='scalex', help='X scale')
 parser.add_argument('-sy','--scaley', dest='scaley', help='Y scale')
@@ -24,6 +30,7 @@ parser.add_argument('-nm','--nomtl', dest='no_mtl', help='don\'t output material
 parser.add_argument('-nvt','--novt', dest='no_vt', help='don\'t output UV coordinates', action='store_true')
 parser.add_argument('-nvn','--novn', dest='no_vn', help='don\'t output normals', action='store_true')
 parser.add_argument('-s','--silent', dest='silent', help='don\'t print anything', action='store_true')
+parser.add_argument('-f','--format', dest='format', help='output format, obj or collada', choices=list(supported_formats))
 
 # Load default options
 scale = [1,1,1]
@@ -34,6 +41,7 @@ output_vt = True
 output_vn = True
 textures_path = ''
 silent = False
+writer_class = wot.OBJModelWriter
 
 # Load arguments
 args = parser.parse_args()
@@ -67,6 +75,9 @@ if args.no_vn:
 if args.silent:
 	silent = True
 	
+if args.format:
+	writer_class = supported_formats[args.format]
+	
 # Load each input file
 for filename_primitive in glob(args.input):
 	# Print progress if allowed
@@ -78,7 +89,7 @@ for filename_primitive in glob(args.input):
 	filename_visual	= '%s.visual' % filename
 	if filename_primitive.endswith('_processed'):
 		filename_visual	+= '_processed'
-	filename_obj = '%s.obj' % filename
+	filename_obj = '%s%s' % (filename, writer_class.ext)
 	filename_mtl = '%s.mtl' % filename
 	
 	# Load names from params if specified
@@ -98,7 +109,7 @@ for filename_primitive in glob(args.input):
 	
 	# Intialize readers and writers
 	model_reader = wot.ModelReader()
-	model_writer = wot.OBJModelWriter(
+	model_writer = writer_class(
 		compress=compress,
 		normals=output_vn,
 		uv=output_vt,
