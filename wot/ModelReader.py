@@ -104,11 +104,32 @@ class ModelReader:
 			# Names of sections used in this render set
 			vertices_name = render_set.find("geometry").find("vertices").text.strip()
 			indices_name = render_set.find("geometry").find("primitive").text.strip()
+			stream_name = None
+			if render_set.find("geometry").find("stream") is not None:
+				stream_name = render_set.find("geometry").find("stream").text.strip()
 			
 			# Load render set data
 			indices, groups = self.readIndices(sections[indices_name]["data"])
 			vertices = self.readVertices(sections[vertices_name]["data"])
 			
+			# Load stream data
+			uv2 = None
+			colour = None
+			if stream_name:
+				data, type = self.readStream(sections[stream_name]["data"])
+				if type == "colour":
+					colour = data
+				elif "uv2" in type:
+					uv2 = data
+			
+			# Apply stream data
+			if uv2 or colour:
+				for index, vertex in enumerate(vertices):
+					if uv2:
+						vertex.uv2 = uv2[index]
+					if colour:
+						vertex.colour = colour[index]
+				
 			# Split data into groups
 			primitive_groups = []
 			for group in render_set.find("geometry").findall("primitiveGroup"):
@@ -330,6 +351,29 @@ class ModelReader:
 		
 		return (indices, groups)
 	
+	def readStream(self, data):
+		self.out("== STREAM")
+		result = []
+		
+		# Read type (ended by 0)
+		type = data.read(64).decode("UTF-8").split('\x00')[0]
+		subtype = None
+		count = unp("I", data.read(4))
+		
+		if "BPV" in type:
+			subtype = data.read(64).decode("UTF-8").split('\x00')[0]
+			count = unp("I", data.read(4))
+		
+		self.out("stream type (%s %s) count %d" % (type, subtype, count))
+		
+		for i in range(count):
+			if subtype == "colour":
+				result.append(unpack("4B", data.read(4)))
+			elif "uv2" in subtype:
+				result.append(unpack("2f", data.read(8)))
+
+		return result, subtype if subtype is not None else type
+	
 	def readNode(self, element):
 		node = {
 			"transform": [ float(v) for v in element.find("transform").text.strip().split(' ') ],
@@ -389,6 +433,7 @@ class Vertice:
 	normal = None
 	uv = None
 	uv2 = None
+	colour = None
 	index = None
 	index2 = None
 	weight = None
