@@ -309,6 +309,14 @@ class ModelReader:
 		for i in range(count):
 			indices.append(unp(format, data.read(stride)))
 		
+		# Change to correct order
+		for i in range(0, count - 2, 3):
+			l1 = indices[i]
+			l2 = indices[i + 1]
+			l3 = indices[i + 2]
+			indices[i + 2] = l1
+			indices[i] = l3
+		
 		# Read groups
 		for i in range(groups_count):
 			ints = unpack("4I", data.read(16))
