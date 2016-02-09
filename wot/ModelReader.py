@@ -113,14 +113,16 @@ class ModelReader:
 			vertices = self.readVertices(sections[vertices_name]["data"])
 			
 			# Load stream data
+			# For some reason this section can be missing
 			uv2 = None
 			colour = None
-			if stream_name:
+			if stream_name and stream_name in sections:
 				data, type = self.readStream(sections[stream_name]["data"])
 				if type == "colour":
 					colour = data
 				elif "uv2" in type:
 					uv2 = data
+				
 			
 			# Apply stream data
 			if uv2 or colour:
