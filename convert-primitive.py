@@ -190,7 +190,11 @@ else:
         output_vt = bool(root.output_vt.get())
         output_vn = bool(root.output_vn.get())
         textures_path = ''
-        writer_class = wot.OBJModelWriter
+
+        if root.writer_format.get() == 1:
+            writer_class = wot.OBJModelWriter
+        else:
+            writer_class = wot.ColladaModelWriter
 
         fn = os.path.splitext(filename_primitive)
         filename_obj = fn[0] + writer_class.ext
@@ -253,7 +257,14 @@ else:
     check_output_vn = ttk.Checkbutton(root, text='output vn', variable=root.output_vn, onvalue=1, offvalue=0)
     check_output_vn.grid(row=5, column=1)
 
+    root.writer_format = IntVar()
+    root.writer_format.set(1)
+    rbutton_obj = ttk.Radiobutton(root, text='obj', variable=root.writer_format, value=1)
+    rbutton_collada = ttk.Radiobutton(root, text='collada', variable=root.writer_format, value=2)
+    rbutton_obj.grid(row=6, column=0)
+    rbutton_collada.grid(row=6, column=1)
+
     btn_unpack = ttk.Button(root, text='Unpack', command=unpack_file)
-    btn_unpack.grid(row=6, column=0, columnspan = 2)
+    btn_unpack.grid(row=7, column=0, columnspan = 2)
 
     root.mainloop()
