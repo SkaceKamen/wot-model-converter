@@ -146,11 +146,10 @@ class OBJModelWriter(ModelWriter):
 		# Compress if needed
 		if self.compress:
 			if py3k:
-				objc = zlib.compress(bytes(objc, encoding='utf-8'))
-				mtlc = zlib.compress(bytes(mtlc, encoding='utf-8'))
-			else:
-				objc = zlib.compress(objc)
-				mtlc = zlib.compress(mtlc)
+				objc = bytes(objc, encoding='utf-8')
+				mtlc = bytes(mtlc, encoding='utf-8')
+			objc = zlib.compress(objc)
+			mtlc = zlib.compress(mtlc)
 
 		# Save to result filename
 		with open(filename, 'wb' if self.compress else 'w') as f:
