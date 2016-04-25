@@ -114,13 +114,10 @@ class XmlUnpacker:
 	def readFloat(self, length):
 		n = int(length / 4)
 		res = ''
-		
 		for i in range(0, n):
-			if i != 0:
+			if i not in (0, n):
 				res += ' '
-			
-			res += str(unpack('f', self.stream.read(4))[0])
-			
+			res += '%f' % unpack('f', self.stream.read(4))[0]
 		return res
 		
 	def readBoolean(self, length):

@@ -1,5 +1,5 @@
 import zlib
-from ModelWriter import ModelWriter
+from wot.ModelWriter import ModelWriter
 
 class ColladaModelWriter(ModelWriter):
 	ext = ".dae"
@@ -54,7 +54,6 @@ class ColladaModelWriter(ModelWriter):
 		return img, surface, sampler, collada.material.Map(sampler, "UV")
 		
 	def write(self, primitive, filename, filename_material=None):
-		
 		# Load required libs now, instead of requiring them for entire library
 		import collada
 		import numpy
@@ -66,7 +65,7 @@ class ColladaModelWriter(ModelWriter):
 		if textureCallback is None:
 			textureCallback = self.baseTextureCallback
 		if scale is None:
-			scale = (1,1,1)
+			scale = (1, 1, 1)
 		
 		
 		# Create result mesh

@@ -12,7 +12,7 @@ Converts World of Tanks models to wavefront obj format.
 Thanks to Phux_and_the_Wheel_Bearing (AKA Coffee_), from whose code this script originates
 
 ## Usage
-Script requires .primitives and .visual files (or .primitives_processed and .visual_processed in case of WoT 0.9.10+) of model to create obj (and mtl) file. You can either specify only primitives file and script will assume visual file is in same folder with same name, but different extension, or you can specify path to visual file separatedly.
+Script requires .primitives and .visual files (or .primitives_processed and .visual_processed in case of WoT 0.9.12+) of model to create obj (and mtl) file. You can either specify only primitives file and script will assume visual file is in same folder with same name, but different extension, or you can specify path to visual file separatedly.
 Script can compress result obj and mtl files using zlib.
 ```
 usage: convert-primitive.py [-h] [-v VISUAL] [-o OBJ] [-m MTL] [-t TEXTURES]
@@ -20,6 +20,8 @@ usage: convert-primitive.py [-h] [-v VISUAL] [-o OBJ] [-m MTL] [-t TEXTURES]
                             [-tx TRANSX] [-ty TRANSY] [-tz TRANSZ] [-c] [-nm]
                             [-nvt] [-nvn]
                             input
+
+or convert-primitive.py [-gui]
 
 Converts BigWorld primitives file to obj.
 
