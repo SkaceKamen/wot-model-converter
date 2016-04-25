@@ -12,6 +12,14 @@ from io import BytesIO
 def unp(format, data):
 	return unpack(format, data)[0]
 
+
+def readBool(item):
+    value = item.strip().lower()
+    if value == 'true' or value == '1':
+        return 1
+    return 0
+
+
 class ModelReader:
 	debug=False
 	
@@ -189,7 +197,7 @@ class ModelReader:
 				elif item.text.strip() == "normalMap":
 					material.normalMap = item.find("Texture").text.strip().replace(".tga", ".dds")
 				elif item.text.strip() == "doubleSided":
-					material.doubleSided = int(item.find("Bool").text.strip())
+					material.doubleSided = readBool(item.find("Bool").text)
 				elif item.text.strip() == "alphaReference":
 					material.alphaReference = int(item.find("Int").text.strip())
 		
@@ -204,8 +212,8 @@ class ModelReader:
 		subtype = None
 		count = unp("I", data.read(4))
 		
-		if "BPVT" in type:
-			subtype = data.read(64).decode("UTF-8").split('\x00')[0]
+		if 'BPVT' in type:
+			subtype = data.read(64).decode('UTF-8').split('\x00')[0]
 			count = unp("I", data.read(4))
 		
 		self.out("type %s subtype %s count %d stride %d" % (type, subtype, count, self.getStride(type, subtype)))
@@ -267,7 +275,7 @@ class ModelReader:
 	
 	def readNormal(self, data, type, subtype):
 		packed = unp("I", data.read(4))
-		if "set3" in subtype:
+		if subtype and 'set3' in subtype:
 			pkz = (int(packed) >> 16) & 0xFF ^0xFF
 			pky = (int(packed) >> 8) & 0xFF ^0xFF
 			pkx = (int(packed)   ) & 0xFF ^0xFF
@@ -377,8 +385,9 @@ class ModelReader:
 		return result, subtype if subtype is not None else type
 	
 	def readNode(self, element):
+		element_transform = element.find("transform")
 		node = {
-			"transform": [ float(v) for v in element.find("transform").text.strip().split(' ') ],
+			"transform": [ float(v) for v in element_transform.text.strip().split(' ') ],
 			"children": {}
 		}
 		

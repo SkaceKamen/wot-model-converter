@@ -1,5 +1,5 @@
 import zlib
-from ModelWriter import ModelWriter
+from wot.ModelWriter import ModelWriter
 
 class ColladaModelWriter(ModelWriter):
 	ext = ".dae"
