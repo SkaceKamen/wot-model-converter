@@ -1,8 +1,14 @@
-"""
-Thanks Coffee_ for discovering the primitives format
-and writing original script that did the unpacking. This is
-just rewritten script to python.
-"""
+""" SkaceKamen (c) 2015-2016 """
+
+#####################################################################
+# Thanks Coffee_ for discovering the primitives format
+# and writing original script that did the unpacking. This is
+# just rewritten script to python.
+
+
+
+#####################################################################
+# imports
 
 from wot.XmlUnpacker import XmlUnpacker
 import xml.etree.ElementTree as ET
@@ -10,6 +16,9 @@ from struct import unpack
 from io import BytesIO
 
 
+
+#####################################################################
+# functions
 
 def unp(format, data):
 	return unpack(format, data)[0]
@@ -23,6 +32,9 @@ def readBool(item):
 	return 0
 
 
+
+#####################################################################
+# ModelReader
 
 class ModelReader:
 	debug=False
@@ -51,7 +63,7 @@ class ModelReader:
 		# Position of section starts from 4
 		position = 4
 
-		self.out("== SECTIONS")
+		self.out('== SECTIONS')
 
 		# Read sections
 		sections = {}
@@ -62,15 +74,15 @@ class ModelReader:
 			if data == None or len(data) != 4:
 				break
 
-			section_size = unp("I", data)
+			section_size = unp('I', data)
 
 			# Skip bytes with unknown purpose
 			if len(f.read(16)) != 16:
 				break
 
 			# Read section name
-			section_name_length = unp("I", f.read(4))
-			section_name = f.read(section_name_length).decode("UTF-8")
+			section_name_length = unp('I', f.read(4))
+			section_name = f.read(section_name_length).decode('UTF-8')
 
 			# Section informations
 			section = {
@@ -80,7 +92,7 @@ class ModelReader:
 				'data': None
 			}
 
-			self.out("%s position %X size %X" % (section_name, section["position"], section["size"]))
+			self.out('%s position %X size %X' % (section_name, section['position'], section['size']))
 
 			sections[section_name] = section
 
@@ -94,43 +106,45 @@ class ModelReader:
 
 		# Read sections data
 		for name, section in sections.items():
-			f.seek(section["position"])
-			section['data'] = BytesIO(f.read(section["size"]))
+			f.seek(section['position'])
+			section['data'] = BytesIO(f.read(section['size']))
 
 		# Read visual data
 		nodes = {}
-		nodes["Scene Root"] = self.readNode(visual.find("node"))
+		nodes['Scene Root'] = self.readNode(visual.find('node'))
 		boundingBox = [
-			[ float(v) for v in visual.find("boundingBox").find("min").text.split(' ') ],
-			[ float(v) for v in visual.find("boundingBox").find("max").text.split(' ') ]
+			[float(v) for v in visual.find('boundingBox').find('min').text.split(' ')],
+			[float(v) for v in visual.find('boundingBox').find('max').text.split(' ')]
 		]
 
 		# Load render sets
 		sets = []
-		for render_set in visual.findall("renderSet"):
+		for render_set in visual.findall('renderSet'):
 			# Nodes - purpose unknown
-			set_nodes = [ v.text for v in render_set.findall("node") ]
+			set_nodes = [v.text for v in render_set.findall('node')]
 
 			# Names of sections used in this render set
-			vertices_name = render_set.find("geometry").find("vertices").text.strip()
-			indices_name = render_set.find("geometry").find("primitive").text.strip()
+			vertices_name = render_set.find('geometry').find('vertices').text.strip()
+			indices_name = render_set.find('geometry').find('primitive').text.strip()
 			stream_name = None
-			if render_set.find("geometry").find("stream") is not None:
-				stream_name = render_set.find("geometry").find("stream").text.strip()
+			if render_set.find('geometry').find('stream') is not None:
+				stream_name = render_set.find('geometry').find('stream').text.strip()
 
 			# Load render set data
-			indices, groups = self.readIndices(sections[indices_name]["data"])
-			vertices = self.readVertices(sections[vertices_name]["data"])
+			vertices, invert_normals = self.readVertices(sections[vertices_name]['data'])
+			indices, groups = self.readIndices(
+				sections[indices_name]['data'],
+				invert_normals)
 
 			# Load stream data
 			# For some reason this section can be missing
 			uv2 = None
 			colour = None
 			if stream_name and stream_name in sections:
-				data, type = self.readStream(sections[stream_name]["data"])
-				if type == "colour":
+				data, type = self.readStream(sections[stream_name]['data'])
+				if type == 'colour':
 					colour = data
-				elif "uv2" in type:
+				elif 'uv2' in type:
 					uv2 = data
 
 
@@ -144,24 +158,26 @@ class ModelReader:
 
 			# Split data into groups
 			primitive_groups = []
-			for group in render_set.find("geometry").findall("primitiveGroup"):
-				material = self.readMaterial(group.find("material"))
-				origin = [ float(v) for v in group.find("groupOrigin").text.split(' ') ]
+			for group in render_set.find('geometry').findall('primitiveGroup'):
+				material = self.readMaterial(group.find('material'))
+				origin = group.find('groupOrigin')
+				if origin is not None:
+					origin = tuple(map(float, origin.text.strip().split(' ')))
 				index = int(group.text.strip())
 
-				i_from = groups[index]["startIndex"]
-				i_to = i_from + groups[index]["primitivesCount"]*3
-				v_from = groups[index]["startVertex"]
-				v_to = v_from + groups[index]["verticesCount"]
+				i_from = groups[index]['startIndex']
+				i_to = i_from + groups[index]['primitivesCount']*3
+				v_from = groups[index]['startVertex']
+				v_to = v_from + groups[index]['verticesCount']
 
-				self.out("group indices %d / %d (%d - %d)" % ((i_to - i_from), len(indices), i_from, i_to))
-				self.out("group vertices %d / %d (%d - %d)" % ((v_to - v_from), len(vertices), v_from, v_to))
+				self.out('group indices %d / %d (%d - %d)' % ((i_to - i_from), len(indices), i_from, i_to))
+				self.out('group vertices %d / %d (%d - %d)' % ((v_to - v_from), len(vertices), v_from, v_to))
 
 				primitive_groups.append(PrimitiveGroup(
 					origin = origin,
 					material = material,
 					vertices = vertices[v_from:v_to],
-					indices = [ v - groups[index]["startVertex"] for v in indices[i_from:i_to] ]
+					indices = [v - groups[index]['startVertex'] for v in indices[i_from:i_to]]
 				))
 
 			# Save render set
@@ -181,58 +197,60 @@ class ModelReader:
 
 		# @TODO: Material has more properties ...
 		for item in element:
-			if item.tag == "fx":
+			if item.tag == 'fx':
 				material.fx = item.text.strip()
-			elif item.tag == "collisionFlags":
+			elif item.tag == 'collisionFlags':
 				material.collisionFlags = item.text.strip()
-			elif item.tag == "materialKind":
+			elif item.tag == 'materialKind':
 				material.materialKind = item.text.strip()
-			elif item.tag == "identifier":
+			elif item.tag == 'identifier':
 				material.ident = item.text.strip()
-			elif item.tag == "property":
-				if item.text.strip() == "diffuseMap":
-					material.diffuseMap = item.find("Texture").text.strip().replace(".tga", ".dds")
-				elif item.text.strip() == "diffuseMap2":
-					material.diffuseMap2 = item.find("Texture").text.strip().replace(".tga", ".dds")
-				elif item.text.strip() == "specularMap":
-					material.specularMap = item.find("Texture").text.strip().replace(".tga", ".dds")
-				elif item.text.strip() == "normalMap":
-					material.normalMap = item.find("Texture").text.strip().replace(".tga", ".dds")
-				elif item.text.strip() == "doubleSided":
-					material.doubleSided = readBool(item.find("Bool").text)
-				elif item.text.strip() == "alphaReference":
-					material.alphaReference = int(item.find("Int").text.strip())
+			elif item.tag == 'property':
+				if item.text.strip() == 'diffuseMap':
+					material.diffuseMap = item.find('Texture').text.strip().replace('.tga', '.dds')
+				elif item.text.strip() == 'diffuseMap2':
+					material.diffuseMap2 = item.find('Texture').text.strip().replace('.tga', '.dds')
+				elif item.text.strip() == 'specularMap':
+					material.specularMap = item.find('Texture').text.strip().replace('.tga', '.dds')
+				elif item.text.strip() == 'normalMap':
+					material.normalMap = item.find('Texture').text.strip().replace('.tga', '.dds')
+				elif item.text.strip() == 'doubleSided':
+					material.doubleSided = readBool(item.find('Bool').text)
+				elif item.text.strip() == 'alphaReference':
+					material.alphaReference = int(item.find('Int').text.strip())
 
 		return material
 
 	def readVertices(self, data):
-		self.out("== VERTICES")
+		self.out('== VERTICES')
 
 		vertices = []
 
-		type = data.read(64).decode("UTF-8").split('\x00')[0]
+		type = data.read(64).split(b'\x00')[0].decode('UTF-8')
 		subtype = None
-		count = unp("I", data.read(4))
+		count = unp('I', data.read(4))
 
 		if 'BPVT' in type:
-			subtype = data.read(64).decode('UTF-8').split('\x00')[0]
-			count = unp("I", data.read(4))
+			subtype = data.read(64).split(b'\x00')[0].decode('UTF-8')
+			count = unp('I', data.read(4))
 
-		self.out("type %s subtype %s count %d stride %d" % (type, subtype, count, self.getStride(type, subtype)))
+		invert_normals = 'iiiww' in type
+
+		self.out('type %s subtype %s count %d stride %d' % (type, subtype, count, self.getStride(type, subtype)))
 
 		for i in range(count):
 			vertices.append(self.readVertice(data, type, subtype))
 
-		return vertices
+		return vertices, invert_normals
 
 	def getStride(self, type, subtype):
 		stride = 24
 
-		if subtype == "set3/xyznuviiiwwtbpc":
+		if subtype == 'set3/xyznuviiiwwtbpc':
 			stride = 40
-		elif "xyznuviiiwwtb" in type:
+		elif 'xyznuviiiwwtb' in type:
 			stride = 37
-		elif "xyznuvpc" in type or "xyznuvtb" in type:
+		elif 'xyznuvpc' in type or 'xyznuvtb' in type:
 			stride = 32
 
 		return stride
@@ -241,9 +259,9 @@ class ModelReader:
 		vert = Vertex()
 
 		# Load basic info
-		vert.position = unpack("3f", data.read(12))
+		vert.position = unpack('3f', data.read(12))
 		vert.normal = self.readNormal(data, type, subtype)
-		vert.uv = unpack("2f", data.read(8))
+		vert.uv = unpack('2f', data.read(8))
 
 		# Decide correct type
 		stride = self.getStride(type, subtype)
@@ -259,24 +277,24 @@ class ModelReader:
 
 		# Unpack remaining values
 		if stride == 32:
-			vert.t = unp("I", data.read(4))
-			vert.bn = unp("I", data.read(4))
+			vert.tangent = unp('I', data.read(4))
+			vert.binormal = unp('I', data.read(4))
 		elif stride == 37:
-			vert.index = unpack("3B", data.read(3))
-			vert.weight = unpack("2B", data.read(2))
-			vert.t = unp("I", data.read(4))
-			vert.bn = unp("I", data.read(4))
+			vert.index = unpack('3B', data.read(3))
+			vert.weight = unpack('2B', data.read(2))
+			vert.tangent = unp('I', data.read(4))
+			vert.binormal = unp('I', data.read(4))
 		elif stride == 40:
-			vert.index = unpack("3B", data.read(3))
-			vert.index2 = unpack("3B", data.read(3))
-			vert.weight = unpack("2B", data.read(2))
-			vert.t = unp("I", data.read(4))
-			vert.bn = unp("I", data.read(4))
+			vert.index = unpack('3B', data.read(3))
+			vert.index2 = unpack('3B', data.read(3))
+			vert.weight = unpack('2B', data.read(2))
+			vert.tangent = unp('I', data.read(4))
+			vert.binormal = unp('I', data.read(4))
 
 		return vert
 
 	def readNormal(self, data, type, subtype):
-		packed = unp("I", data.read(4))
+		packed = unp('I', data.read(4))
 		if subtype and 'set3' in subtype:
 			pkz = (int(packed) >> 16) & 0xFF ^0xFF
 			pky = (int(packed) >> 8) & 0xFF ^0xFF
@@ -298,7 +316,7 @@ class ModelReader:
 		else:
 			pkz = (int(packed) >> 22) & 0x3FF
 			pky = (int(packed) >> 11) & 0x7FF
-			pkx = (int(packed)) & 0x7FF
+			pkx = int(packed) & 0x7FF
 
 			if pkx > 0x3ff:
 				x = - float((pkx & 0x3ff ^ 0x3ff)+1)/0x3ff
@@ -314,98 +332,97 @@ class ModelReader:
 				z = float(pkz) / 0x1ff
 			return (x, y, z)
 
-	def readIndices(self, data):
-		self.out("== INDICES")
+	def readIndices(self, data, invert_normals):
+		self.out('== INDICES')
 
 		# Prepare informations
 		indices = []
 		groups = []
 
 		# Read type (ended by 0)
-		type = data.read(64).split(b'\x00')[0].decode("UTF-8", "ignore")
+		type = data.read(64).split(b'\x00')[0].decode('UTF-8', 'ignore')
 
 		# One indice length
 		stride = 2
-		format = "H"
+		format = '<3H'
 
-		if type == "list32":
+		if type == 'list32':
 			stride = 4
-			format = "I"
+			format = '<3I'
 
 		# Read totals
-		count = unp("I", data.read(4))
-		groups_count = unp("I", data.read(4))
+		count = unp('<I', data.read(4))
+		groups_count = unp('<I', data.read(4))
 
-		self.out("groups %d indices %d stride %d type %s" % (groups_count, count, stride, type))
+		self.out('groups %d indices %d stride %d type %s' % (groups_count, count, stride, type))
 
 		# Read indices
-		for i in range(count):
-			indices.append(unp(format, data.read(stride)))
-
-		# Change to correct order
-		for i in range(0, count - 2, 3):
-			l1 = indices[i]
-			l2 = indices[i + 1]
-			l3 = indices[i + 2]
-			indices[i + 2] = l1
-			indices[i] = l3
+		for i in range(count//3):
+			if invert_normals:
+				i3, i2, i1 = unpack(format, data.read(stride*3))
+			else:
+				i1, i2, i3 = unpack(format, data.read(stride*3))
+			indices += [i1, i2, i3]
 
 		# Read groups
 		for i in range(groups_count):
-			ints = unpack("4I", data.read(16))
+			ints = unpack('4I', data.read(16))
 			groups.append({
-				"id": i,
-				"startIndex": ints[0],
-				"primitivesCount": ints[1],
-				"startVertex": ints[2],
-				"verticesCount": ints[3]
+				'id': i,
+				'startIndex': ints[0],
+				'primitivesCount': ints[1],
+				'startVertex': ints[2],
+				'verticesCount': ints[3]
 			})
 
 		return (indices, groups)
 
 	def readStream(self, data):
-		self.out("== STREAM")
+		self.out('== STREAM')
 		result = []
 
 		# Read type (ended by 0)
-		type = data.read(64).decode("UTF-8").split('\x00')[0]
+		type = data.read(64).split(b'\x00')[0].decode('UTF-8')
 		subtype = None
-		count = unp("I", data.read(4))
+		count = unp('I', data.read(4))
 
-		if "BPV" in type:
-			subtype = data.read(64).decode("UTF-8").split('\x00')[0]
-			count = unp("I", data.read(4))
+		if 'BPV' in type:
+			subtype = data.read(64).split(b'\x00')[0].decode('UTF-8')
+			count = unp('I', data.read(4))
 
-		self.out("stream type (%s %s) count %d" % (type, subtype, count))
+		self.out('stream type (%s %s) count %d' % (type, subtype, count))
 
 		for i in range(count):
-			if subtype == "colour":
-				result.append(unpack("4B", data.read(4)))
-			elif "uv2" in subtype:
-				result.append(unpack("2f", data.read(8)))
+			if subtype == 'colour':
+				result.append(unpack('4B', data.read(4)))
+			elif 'uv2' in subtype:
+				result.append(unpack('2f', data.read(8)))
 
 		return result, subtype if subtype is not None else type
 
 	def readNode(self, element):
-		element_transform = element.find("transform")
+		element_transform = element.find('transform')
 		if element_transform.text.strip():
 			rows = element_transform.text.strip().split(' ')
 		else:
-			rows = element_transform.find("row0").text.strip().split(' ') + \
-				element_transform.find("row1").text.strip().split(' ') + \
-				element_transform.find("row2").text.strip().split(' ') + \
-				element_transform.find("row3").text.strip().split(' ')
+			rows = element_transform.find('row0').text.strip().split(' ') + \
+				element_transform.find('row1').text.strip().split(' ') + \
+				element_transform.find('row2').text.strip().split(' ') + \
+				element_transform.find('row3').text.strip().split(' ')
 		node = {
-			"transform": [ float(v) for v in rows ],
-			"children": {}
+			'transform': [float(v) for v in rows],
+			'children': {}
 		}
 
-		for child in element.findall("node"):
-			node["children"][child.find("identifier").text.strip()] = self.readNode(child)
+		for child in element.findall('node'):
+			node['children'][child.find('identifier').text.strip()] = self.readNode(child)
 
 		return node
 
 
+
+#####################################################################
+# Primitive
 
 class Primitive:
 	renderSets = None
@@ -419,6 +436,9 @@ class Primitive:
 
 
 
+#####################################################################
+# RenderSet
+
 class RenderSet:
 	nodes = None
 	groups = None
@@ -428,6 +448,9 @@ class RenderSet:
 		self.groups = groups
 
 
+
+#####################################################################
+# PrimitiveGroup
 
 class PrimitiveGroup:
 	origin = None
@@ -443,12 +466,14 @@ class PrimitiveGroup:
 
 
 
+#####################################################################
+# Material
+
 class Material:
 	shader = None
 	collisionFlags = None
 	materialKind = None
 	identifier = None
-
 	diffuseMap = None
 	diffuseMap2 = None
 	doubleSided = None
@@ -458,6 +483,9 @@ class Material:
 
 
 
+#####################################################################
+# Vertex
+
 class Vertex:
 	position = None
 	normal = None
@@ -466,6 +494,27 @@ class Vertex:
 	colour = None
 	index = None
 	index2 = None
+	index3 = None
 	weight = None
-	t = None
-	bn = None
+	weight2 = None
+	tangent = None
+	binormal = None
+
+	def __init__(self, data=None, vtype=''):
+		if data and vtype:
+			pass
+
+	def __eq__(self, other):
+		return (
+			self.position == other.position and
+			self.normal == other.normal and
+			self.uv == other.uv and
+			self.uv2 == other.uv2 and
+			self.colour == other.colour and
+			self.index == other.index and
+			self.index2 == other.index2 and
+			self.index3 == other.index3 and
+			self.weight == other.weight and
+			self.weight2 == other.weight2 and
+			self.tangent == other.tangent and
+			self.binormal == other.binormal)

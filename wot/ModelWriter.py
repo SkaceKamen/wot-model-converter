@@ -160,3 +160,4 @@ class OBJModelWriter(ModelWriter):
 				f.write(mtlc)
 
 		return filename, filename_material
+
