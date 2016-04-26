@@ -18,7 +18,7 @@ if version_info < (3, 0, 0):
 
 
 def hex2(arg, size=0, reverse=False):
-	exec "value = '%%0%dX' %% arg" % size
+	exec("value = '%%0%dX' %% arg" % size)
 	if reverse:
 		result = ''
 		for i in range(0, len(value), 2):

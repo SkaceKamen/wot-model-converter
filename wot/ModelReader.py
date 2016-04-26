@@ -15,6 +15,12 @@ from wot.VertexTypes import *
 import xml.etree.ElementTree as ET
 from struct import unpack
 from io import BytesIO
+from sys import version_info
+
+
+
+if version_info < (3, 0, 0):
+	range = xrange
 
 
 
@@ -38,7 +44,7 @@ def readBool(item):
 # ModelReader
 
 class ModelReader:
-	debug=False
+	debug = False
 
 	def __init__(self,debug=False):
 		self.debug = debug
@@ -288,22 +294,22 @@ class ModelReader:
 	def readNormal(self, data, IS_NEW):
 		packed = unp('I', data.read(4))
 		if IS_NEW:
-			pkz = (int(packed) >> 16) & 0xFF ^0xFF
-			pky = (int(packed) >> 8) & 0xFF ^0xFF
-			pkx = int(packed) & 0xFF ^0xFF
+			pkz = (int(packed)>>16)&0xFF^0xFF
+			pky = (int(packed)>>8)&0xFF^0xFF
+			pkx = int(packed)&0xFF^0xFF
 
 			if pkx > 0x7f:
-				x = - float(pkx & 0x7f )/0x7f
+				x = -float(pkx&0x7f)/0x7f
 			else:
-				x = float(pkx ^ 0x7f)/0x7f
+				x = float(pkx^0x7f)/0x7f
 			if pky > 0x7f:
-				y = - float(pky & 0x7f)/0x7f
+				y = -float(pky&0x7f)/0x7f
 			else:
-				y = float(pky ^ 0x7f)/0x7f
+				y = float(pky^0x7f)/0x7f
 			if pkz >0x7f:
-				z = - float(pkz & 0x7f)/0x7f
+				z = -float(pkz&0x7f)/0x7f
 			else:
-				z = float(pkz ^ 0x7f)/0x7f
+				z = float(pkz^0x7f)/0x7f
 			return (x, y, z)
 		else:
 			pkz = (int(packed) >> 22) & 0x3FF
@@ -311,17 +317,17 @@ class ModelReader:
 			pkx = int(packed) & 0x7FF
 
 			if pkx > 0x3ff:
-				x = - float((pkx & 0x3ff ^ 0x3ff)+1)/0x3ff
+				x = -float((pkx&0x3ff^0x3ff)+1)/0x3ff
 			else:
 				x = float(pkx)/0x3ff
 			if pky > 0x3ff:
-				y = - float((pky & 0x3ff ^ 0x3ff) +1)/0x3ff
+				y = -float((pky&0x3ff^0x3ff)+1)/0x3ff
 			else:
 				y = float(pky)/0x3ff
-			if pkz >0x1ff:
-				z = - float((pkz & 0x1ff ^ 0x1ff) +1)/0x1ff
+			if pkz > 0x1ff:
+				z = -float((pkz&0x1ff^0x1ff)+1)/0x1ff
 			else:
-				z = float(pkz) / 0x1ff
+				z = float(pkz)/0x1ff
 			return (x, y, z)
 
 	def readIndices(self, data, invert_normals):
