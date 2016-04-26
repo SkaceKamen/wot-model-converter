@@ -24,7 +24,15 @@ class ColladaModelWriter(ModelWriter):
 	compress = False
 	textureCounter = 0
 
-	def __init__(self, material=False, normals=False, uv=False, textureBase='', textureCallback=None, compress=False, scale=None):
+	def __init__(
+			self,
+			material=False,
+			normals=False,
+			uv=False,
+			textureBase='',
+			textureCallback=None,
+			compress=False,
+			scale=None):
 		self.material = material
 		self.normals = normals
 		self.uv = uv
