@@ -1,9 +1,19 @@
+""" SkaceKamen (c) 2015-2016 """
+
+
+
+#####################################################################
+# imports
+
 import zlib
 from sys import version_info
 
 py3k = version_info >= (3, 0, 0)
 
 
+
+#####################################################################
+# ModelWriter
 
 class ModelWriter(object):
 	ext = ''
@@ -13,22 +23,28 @@ class ModelWriter(object):
 
 
 
+#####################################################################
+# OBJModelWriter
+
 class OBJModelWriter(ModelWriter):
 	ext = '.obj'
-
 	material = False
-
 	normals = False
 	uv = False
-
 	scale = None
-
 	textureBase = ''
 	textureCallback = None
-
 	compress = False
 
-	def __init__(self, material=False, normals=False, uv=False, textureBase='', textureCallback=None, compress=False, scale=None):
+	def __init__(
+			self,
+			material=False,
+			normals=False,
+			uv=False,
+			textureBase='',
+			textureCallback=None,
+			compress=False,
+			scale=None):
 		self.material = material
 		self.normals = normals
 		self.uv = uv
@@ -146,8 +162,8 @@ class OBJModelWriter(ModelWriter):
 		# Compress if needed
 		if self.compress:
 			if py3k:
-				objc = bytes(objc, encoding='utf-8')
-				mtlc = bytes(mtlc, encoding='utf-8')
+				objc = bytes(objc, encoding='UTF-8')
+				mtlc = bytes(mtlc, encoding='UTF-8')
 			objc = zlib.compress(objc)
 			mtlc = zlib.compress(mtlc)
 
@@ -160,4 +176,3 @@ class OBJModelWriter(ModelWriter):
 				f.write(mtlc)
 
 		return filename, filename_material
-

@@ -3,7 +3,7 @@ from wot.chunks.utility import *
 def get(f, bwst, debug=False):
 	table = read_table(f)
 	trees = {}
-	
+
 	for item in table["entries"]:
 		matrix = unpack("<16f", item[0:64])
 		key = unp("<I", item[64:68])
