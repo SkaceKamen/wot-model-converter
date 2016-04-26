@@ -1,3 +1,10 @@
+""" SkaceKamen (c) 2015-2016 """
+
+
+
+#####################################################################
+# imports
+
 from wot.chunks.utility import *
 
 def get(f, strings, debug=False):
@@ -26,7 +33,7 @@ def get(f, strings, debug=False):
 			"to": ints[2]
 		}
 
-		#print hex2(info["from"], 8), hex2(info["to"], 8)
+		# print(hex2(info["from"], 8), hex2(info["to"], 8))
 
 		materials.append(info);
 
@@ -42,8 +49,8 @@ def get(f, strings, debug=False):
 	for item in table["entries"]:
 		key = unp("<I", item)
 		fx.append(strings[key])
-		
-		#print(strings[key])
+
+		# print(strings[key])
 
 	"""
 	PROPERTIES TABLE
@@ -144,5 +151,5 @@ def get(f, strings, debug=False):
 		result.append(info)
 
 		index += 1
-		#print(index, info)
+		# print(index, info)
 	return result

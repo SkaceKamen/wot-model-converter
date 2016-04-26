@@ -1,3 +1,10 @@
+""" SkaceKamen (c) 2015-2016 """
+
+
+
+#####################################################################
+# imports
+
 from struct import unpack
 from struct import pack
 import os
@@ -27,8 +34,8 @@ def read_table(f):
 	}
 
 def print_table(t):
-	print ("size ", t["entry_size"])
-	print ("count", t["entry_count"])
+	print("size ", t["entry_size"])
+	print("count", t["entry_count"])
 
 def get_bwst():
 	strings = {}
@@ -45,6 +52,6 @@ def get_bwst():
 			f.seek(strings_start + unp("<I", item[4:8]))
 			strings[key] = f.read(unp("<I", item[8:12]))
 
-			#print (hex2(key, 8), strings[key])
+			# print(hex2(key, 8), strings[key])
 
 	return strings

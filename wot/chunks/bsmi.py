@@ -1,3 +1,10 @@
+""" SkaceKamen (c) 2015-2016 """
+
+
+
+#####################################################################
+# imports
+
 from wot.chunks.utility import *
 from wot.chunks.table import Table
 

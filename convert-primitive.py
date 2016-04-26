@@ -1,11 +1,13 @@
-#!/usr/bin/env python2.7
+""" SkaceKamen (c) 2015-2016 """
 
 
 
 #####################################################################
 # imports
 
-import argparse, os, sys
+import argparse
+import os
+import sys
 import wot
 from glob import glob
 

@@ -1,3 +1,10 @@
+""" SkaceKamen (c) 2015-2016 """
+
+
+
+#####################################################################
+# imports
+
 from wot.chunks.utility import *
 from io import BytesIO
 
@@ -18,7 +25,7 @@ def get(f, debug=False):
 		f.seek(strings_start  + unp("<I", item[4:8]))
 		strings[str(key)] = f.read(unp("<I", item[8:12])).decode("utf-8")
 
-		#print(hex2(key), strings[str(key)])
+		# print(hex2(key), strings[str(key)])
 
 	f.seek(strings_end)
 
@@ -45,7 +52,7 @@ def get(f, debug=False):
 			"vertex_count": unp("<I", item[12:16])
 		}
 
-		#print (index, model["name"], model["type"], "(", model["position_from"], " ... ", model["position_to"], ")", model["int4"])
+		# print(index, model["name"], model["type"], "(", model["position_from"], " ... ", model["position_to"], ")", model["int4"])
 
 		models.append(model)
 		index += 1

@@ -149,7 +149,7 @@ class PackageReader:
 		for part in dirpath:
 			#Check path part existence
 			if part.lower() not in node:
-				#print part.lower(), "not found"
+				# print(part.lower(), "not found")
 				return None
 
 			node = node[part.lower()]
