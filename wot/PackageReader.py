@@ -24,7 +24,7 @@ class PackageReader:
 	
 	def isIndexCache(self):
 		"""Returns if index cache exists."""
-		return self.cache != None and os.path.exists(self.indexCachePath())
+		return self.cache is not None and os.path.exists(self.indexCachePath())
 	
 	def indexCachePath(self):
 		"""Returns path to index cache."""
