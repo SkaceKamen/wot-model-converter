@@ -11,6 +11,7 @@
 # imports
 
 from wot.XmlUnpacker import XmlUnpacker
+from wot.VertexTypes import *
 import xml.etree.ElementTree as ET
 from struct import unpack
 from io import BytesIO
@@ -234,68 +235,59 @@ class ModelReader:
 			subtype = data.read(64).split(b'\x00')[0].decode('UTF-8')
 			count = unp('I', data.read(4))
 
-		invert_normals = 'iiiww' in type
+		# Decide correct type
+		vtype = self.getVertType(type, subtype)
 
-		self.out('type %s subtype %s count %d stride %d' % (type, subtype, count, self.getStride(type, subtype)))
+		self.out('type %s subtype %s count %d stride %d' % (type, subtype, count, vtype.SIZE))
 
 		for i in range(count):
-			vertices.append(self.readVertice(data, type, subtype))
+			vertices.append(self.readVertice(data, vtype))
 
-		return vertices, invert_normals
+		return vertices, vtype.IS_SKINNED
 
-	def getStride(self, type, subtype):
-		stride = 24
+	def getVertType(self, type, subtype):
+		if subtype is not None:
+			if subtype == vt_SET3_XYZNUVIIIWWTBPC.V_TYPE:
+				return vt_SET3_XYZNUVIIIWWTBPC
+			elif subtype == vt_SET3_XYZNUVTBPC.V_TYPE:
+				return vt_SET3_XYZNUVTBPC
+		else:
+			if type == vt_XYZNUVIIIWWTB.V_TYPE:
+				return vt_XYZNUVIIIWWTB
+			elif type == vt_XYZNUVTB.V_TYPE:
+				return vt_XYZNUVTB
+			elif type == vt_XYZNUV.V_TYPE:
+				return vt_XYZNUV
 
-		if subtype == 'set3/xyznuviiiwwtbpc':
-			stride = 40
-		elif 'xyznuviiiwwtb' in type:
-			stride = 37
-		elif 'xyznuvpc' in type or 'xyznuvtb' in type:
-			stride = 32
-
-		return stride
-
-	def readVertice(self, data, type, subtype):
+	def readVertice(self, data, vtype):
 		vert = Vertex()
 
-		# Load basic info
-		vert.position = unpack('3f', data.read(12))
-		vert.normal = self.readNormal(data, type, subtype)
-		vert.uv = unpack('2f', data.read(8))
-
-		# Decide correct type
-		stride = self.getStride(type, subtype)
-
-		"""
-		if ("xyznuvpc" in type and "set3" not in type) or "xyznuvtb" in type:
-			stride = 32
-		if "xyznuviiiwwtb" in type:
-			stride = 37
-		if type == 'set3/xyznuviiiwwtbpc':
-			stride = 40
-		"""
+		# Load basic info - xyznuv
+		vert.position = unpack('<3f', data.read(12))
+		vert.normal = self.readNormal(data, vtype.IS_NEW)
+		vert.uv = unpack('<2f', data.read(8))
 
 		# Unpack remaining values
-		if stride == 32:
-			vert.tangent = unp('I', data.read(4))
-			vert.binormal = unp('I', data.read(4))
-		elif stride == 37:
+		if vtype.V_TYPE in (vt_SET3_XYZNUVTBPC.V_TYPE, vt_XYZNUVTB.V_TYPE):
+			vert.tangent = unp('<I', data.read(4))
+			vert.binormal = unp('<I', data.read(4))
+		elif vtype.V_TYPE == vt_SET3_XYZNUVIIIWWTBPC.V_TYPE:
 			vert.index = unpack('3B', data.read(3))
+			vert.index2 = unpack('3B', data.read(3))
 			vert.weight = unpack('2B', data.read(2))
 			vert.tangent = unp('I', data.read(4))
 			vert.binormal = unp('I', data.read(4))
-		elif stride == 40:
+		elif vtype.V_TYPE == vt_XYZNUVIIIWWTB.V_TYPE:
 			vert.index = unpack('3B', data.read(3))
-			vert.index2 = unpack('3B', data.read(3))
 			vert.weight = unpack('2B', data.read(2))
 			vert.tangent = unp('I', data.read(4))
 			vert.binormal = unp('I', data.read(4))
 
 		return vert
 
-	def readNormal(self, data, type, subtype):
+	def readNormal(self, data, IS_NEW):
 		packed = unp('I', data.read(4))
-		if subtype and 'set3' in subtype:
+		if IS_NEW:
 			pkz = (int(packed) >> 16) & 0xFF ^0xFF
 			pky = (int(packed) >> 8) & 0xFF ^0xFF
 			pkx = int(packed) & 0xFF ^0xFF
@@ -381,7 +373,7 @@ class ModelReader:
 		self.out('== STREAM')
 		result = []
 
-		# Read type (ended by 0)
+		# Read type (ended by \x00)
 		type = data.read(64).split(b'\x00')[0].decode('UTF-8')
 		subtype = None
 		count = unp('I', data.read(4))
