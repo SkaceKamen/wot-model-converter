@@ -40,6 +40,13 @@ def readBool(item):
 
 
 
+def readInt(item):
+	if item is None:
+		return 0
+	return int(item)
+
+
+
 #####################################################################
 # ModelReader
 
@@ -204,27 +211,28 @@ class ModelReader:
 
 		# @TODO: Material has more properties ...
 		for item in element:
+			item_text = item.text.strip()
 			if item.tag == 'fx':
-				material.fx = item.text.strip()
+				material.fx = item_text
 			elif item.tag == 'collisionFlags':
-				material.collisionFlags = item.text.strip()
+				material.collisionFlags = item_text
 			elif item.tag == 'materialKind':
-				material.materialKind = item.text.strip()
+				material.materialKind = item_text
 			elif item.tag == 'identifier':
-				material.ident = item.text.strip()
+				material.ident = item_text
 			elif item.tag == 'property':
-				if item.text.strip() == 'diffuseMap':
-					material.diffuseMap = item.find('Texture').text.strip().replace('.tga', '.dds')
-				elif item.text.strip() == 'diffuseMap2':
-					material.diffuseMap2 = item.find('Texture').text.strip().replace('.tga', '.dds')
-				elif item.text.strip() == 'specularMap':
-					material.specularMap = item.find('Texture').text.strip().replace('.tga', '.dds')
-				elif item.text.strip() == 'normalMap':
-					material.normalMap = item.find('Texture').text.strip().replace('.tga', '.dds')
-				elif item.text.strip() == 'doubleSided':
+				if item_text == 'diffuseMap':
+					material.diffuseMap = item.find('Texture').text.strip()
+				elif item_text == 'diffuseMap2':
+					material.diffuseMap2 = item.find('Texture').text.strip()
+				elif item_text == 'specularMap':
+					material.specularMap = item.find('Texture').text.strip()
+				elif item_text == 'normalMap':
+					material.normalMap = item.find('Texture').text.strip()
+				elif item_text == 'doubleSided':
 					material.doubleSided = readBool(item.find('Bool').text)
-				elif item.text.strip() == 'alphaReference':
-					material.alphaReference = int(item.find('Int').text.strip())
+				elif item_text == 'alphaReference':
+					material.alphaReference = readInt(item.find('Int').text)
 
 		return material
 
@@ -257,6 +265,8 @@ class ModelReader:
 				return vt_SET3_XYZNUVIIIWWTBPC
 			elif subtype == vt_SET3_XYZNUVTBPC.V_TYPE:
 				return vt_SET3_XYZNUVTBPC
+			elif subtype == vt_SET3_XYZNUVPC.V_TYPE:
+				return vt_SET3_XYZNUVPC
 		else:
 			if type == vt_XYZNUVIIIWWTB.V_TYPE:
 				return vt_XYZNUVIIIWWTB
@@ -497,10 +507,6 @@ class Vertex:
 	weight2 = None
 	tangent = None
 	binormal = None
-
-	def __init__(self, data=None, vtype=''):
-		if data and vtype:
-			pass
 
 	def __eq__(self, other):
 		return (

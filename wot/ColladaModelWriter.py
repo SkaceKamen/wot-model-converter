@@ -152,15 +152,25 @@ class ColladaModelWriter(ModelWriter):
 					'%s_normals' % name,
 					numpy.array(normal_values),
 					('X', 'Y', 'Z'))
-				uv_src = collada.source.FloatSource('%s_uv' % name, numpy.array(uv_values), ('S', 'T'))
+				uv_src = collada.source.FloatSource(
+					'%s_uv' % name,
+					numpy.array(uv_values),
+					('S', 'T'))
 
 				input_list = collada.source.InputList()
 				input_list.addInput(0, 'VERTEX', '#%s_verts' % name)
 				input_list.addInput(1, 'NORMAL', '#%s_normals' % name)
 				input_list.addInput(2, 'TEXCOORD', '#%s_uv' % name)
 
-				geom = collada.geometry.Geometry(mesh, name, name, [vert_src, normal_src, uv_src])
-				triset = geom.createTriangleSet(numpy.array(indices), input_list, material_ref)
+				geom = collada.geometry.Geometry(
+					mesh,
+					name,
+					name,
+					[vert_src, normal_src, uv_src])
+				triset = geom.createTriangleSet(
+					numpy.array(indices),
+					input_list,
+					material_ref)
 				geom.primitives.append(triset)
 				mesh.geometries.append(geom)
 
