@@ -222,13 +222,13 @@ class ModelReader:
 				material.ident = item_text
 			elif item.tag == 'property':
 				if item_text == 'diffuseMap':
-					material.diffuseMap = item.find('Texture').text.strip()
+					material.diffuseMap = item.find('Texture').text.strip().replace('.tga', '.dds')
 				elif item_text == 'diffuseMap2':
-					material.diffuseMap2 = item.find('Texture').text.strip()
+					material.diffuseMap2 = item.find('Texture').text.strip().replace('.tga', '.dds')
 				elif item_text == 'specularMap':
-					material.specularMap = item.find('Texture').text.strip()
+					material.specularMap = item.find('Texture').text.strip().replace('.tga', '.dds')
 				elif item_text == 'normalMap':
-					material.normalMap = item.find('Texture').text.strip()
+					material.normalMap = item.find('Texture').text.strip().replace('.tga', '.dds')
 				elif item_text == 'doubleSided':
 					material.doubleSided = readBool(item.find('Bool').text)
 				elif item_text == 'alphaReference':
