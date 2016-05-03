@@ -142,7 +142,7 @@ class ColladaModelWriter(ModelWriter):
 				for vertex in group.vertices:
 					vert_values.extend(self.multiply(vertex.position, scale))
 					normal_values.extend(self.multiply(vertex.normal, scale))
-					uv_values.extend((vertex.uv[0], -vertex.uv[1]))
+					uv_values.extend(vertex.uv)
 
 				vert_src = collada.source.FloatSource(
 					'%s_verts' % name,

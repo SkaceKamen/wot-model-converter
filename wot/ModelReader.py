@@ -145,10 +145,8 @@ class ModelReader:
 				stream_name = render_set.find('geometry').find('stream').text.strip()
 
 			# Load render set data
-			vertices, invert_normals = self.readVertices(sections[vertices_name]['data'])
-			indices, groups = self.readIndices(
-				sections[indices_name]['data'],
-				invert_normals)
+			vertices = self.readVertices(sections[vertices_name]['data'])
+			indices, groups = self.readIndices(sections[indices_name]['data'])
 
 			# Load stream data
 			# For some reason this section can be missing
@@ -257,7 +255,7 @@ class ModelReader:
 		for i in range(count):
 			vertices.append(self.readVertice(data, vtype))
 
-		return vertices, vtype.IS_SKINNED
+		return vertices
 
 	def getVertType(self, type, subtype):
 		if subtype is not None:
@@ -284,7 +282,8 @@ class ModelReader:
 			y = -y
 		vert.position = (x, y, z)
 		vert.normal = self.readNormal(data, vtype.IS_NEW)
-		vert.uv = unpack('<2f', data.read(8))
+		(u, v) = unpack('<2f', data.read(8))
+		vert.uv = (u, 1-v)
 
 		# Unpack remaining values
 		if vtype.V_TYPE in (vt_SET3_XYZNUVTBPC.V_TYPE, vt_XYZNUVTB.V_TYPE):
@@ -343,7 +342,7 @@ class ModelReader:
 				z = float(pkz)/0x1ff
 			return (x, z, y)
 
-	def readIndices(self, data, invert_normals):
+	def readIndices(self, data):
 		self.out('== INDICES')
 
 		# Prepare informations
@@ -369,10 +368,7 @@ class ModelReader:
 
 		# Read indices
 		for i in range(count//3):
-			if invert_normals:
-				i3, i2, i1 = unpack(format, data.read(stride*3))
-			else:
-				i1, i2, i3 = unpack(format, data.read(stride*3))
+			i3, i2, i1 = unpack(format, data.read(stride*3))
 			indices += [i1, i2, i3]
 
 		# Read groups

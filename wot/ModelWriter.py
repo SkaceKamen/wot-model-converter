@@ -122,7 +122,7 @@ class OBJModelWriter(ModelWriter):
 					if self.normals:
 						objc += 'vn %f %f %f\n' % self.multiply(vertex.normal, scale)
 					if self.uv:
-						objc += 'vt %f %f\n' % (vertex.uv[0], -vertex.uv[1])
+						objc += 'vt %f %f\n' % vertex.uv
 
 				# Decide faces format
 				format = 0
