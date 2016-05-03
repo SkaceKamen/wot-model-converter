@@ -279,7 +279,10 @@ class ModelReader:
 		vert = Vertex()
 
 		# Load basic info - xyznuv
-		vert.position = unpack('<3f', data.read(12))
+		(x, z, y) = unpack('<3f', data.read(12))
+		if vtype.IS_SKINNED:
+			y = -y
+		vert.position = (x, y, z)
 		vert.normal = self.readNormal(data, vtype.IS_NEW)
 		vert.uv = unpack('<2f', data.read(8))
 
@@ -291,13 +294,13 @@ class ModelReader:
 			vert.index = unpack('3B', data.read(3))
 			vert.index2 = unpack('3B', data.read(3))
 			vert.weight = unpack('2B', data.read(2))
-			vert.tangent = unp('I', data.read(4))
-			vert.binormal = unp('I', data.read(4))
+			vert.tangent = unp('<I', data.read(4))
+			vert.binormal = unp('<I', data.read(4))
 		elif vtype.V_TYPE == vt_XYZNUVIIIWWTB.V_TYPE:
 			vert.index = unpack('3B', data.read(3))
 			vert.weight = unpack('2B', data.read(2))
-			vert.tangent = unp('I', data.read(4))
-			vert.binormal = unp('I', data.read(4))
+			vert.tangent = unp('<I', data.read(4))
+			vert.binormal = unp('<I', data.read(4))
 
 		return vert
 
@@ -320,7 +323,7 @@ class ModelReader:
 				z = -float(pkz&0x7f)/0x7f
 			else:
 				z = float(pkz^0x7f)/0x7f
-			return (x, y, z)
+			return (x, z, y)
 		else:
 			pkz = (int(packed) >> 22) & 0x3FF
 			pky = (int(packed) >> 11) & 0x7FF
@@ -338,7 +341,7 @@ class ModelReader:
 				z = -float((pkz&0x1ff^0x1ff)+1)/0x1ff
 			else:
 				z = float(pkz)/0x1ff
-			return (x, y, z)
+			return (x, z, y)
 
 	def readIndices(self, data, invert_normals):
 		self.out('== INDICES')
