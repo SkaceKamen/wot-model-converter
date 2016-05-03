@@ -1,9 +1,16 @@
+""" SkaceKamen (c) 2015-2016 """
+
+
+
+#####################################################################
+# imports
+
 from wot.chunks.utility import *
 
 def get(f, debug=False):
 	table = read_table(f)
 	water = []
-	
+
 	for item in table["entries"]:
 		water.append({
 			"position": unpack("<3f", item[0:12]),

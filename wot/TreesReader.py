@@ -163,7 +163,7 @@ class Vertex:
 #####################################################################
 # Tree
 
-class Tree:	
+class Tree:
 	objects = None
 
 	def __init__(self, objects):

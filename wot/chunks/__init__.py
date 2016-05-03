@@ -1,3 +1,10 @@
+""" SkaceKamen (c) 2015-2016 """
+
+
+
+#####################################################################
+# imports
+
 import wot.chunks.bwst
 import wot.chunks.bsmo
 import wot.chunks.bwsg

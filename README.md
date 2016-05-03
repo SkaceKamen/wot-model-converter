@@ -67,5 +67,9 @@ will output 'Hull.dae'
 
 will process all primitives_processed files and output .obj under current folder.
 
+```convert-primitive.py -gui```
+
+will open window with options of exports
+
 ## Requirements
 Python 2.7 - 3.5

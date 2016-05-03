@@ -1,6 +1,18 @@
+""" SkaceKamen (c) 2015-2016 """
+
+
+
+#####################################################################
+# imports
+
 from struct import unpack
 import xml.etree.ElementTree as ET
 import base64
+
+
+
+#####################################################################
+# XmlUnpacker
 
 class XmlUnpacker:
 	PACKED_HEADER = 0x62a14e45
@@ -17,14 +29,14 @@ class XmlUnpacker:
 			stream.seek(0);
 			tree = ET.fromstring(stream.read())
 			return tree
-		
+
 		self.dict = self.readDictionary()
-		
+
 		root = ET.Element('root')
 		self.readElement(root)
-		
+
 		self.stream = None
-		
+
 		return root
 
 	def readElement(self, base):
@@ -32,9 +44,9 @@ class XmlUnpacker:
 
 		descriptor = self.readDataDescriptor()
 		children = self.readElementDescriptors(children_count)
-		
+
 		offset = self.readData(base, 0, descriptor)
-		
+
 		for child in children:
 			node = ET.SubElement(base, self.dict[child['name_index']])
 			offset = self.readData(node, offset, child['descriptor'])
@@ -66,7 +78,7 @@ class XmlUnpacker:
 				})
 			else:
 				raise Exception('Failed to read element descriptors')
-				
+
 		return descriptors
 
 	def readData(self, element, offset, descriptor):
