@@ -290,7 +290,7 @@ class ModelReader:
 			vert.tangent = unp('<I', data.read(4))
 			vert.binormal = unp('<I', data.read(4))
 		elif vtype.V_TYPE == vt_SET3_XYZNUVIIIWWTBPC.V_TYPE:
-			(index1, index2, index3) = unpack('3B', data.read(3))
+			(index3, index2, index1) = unpack('3B', data.read(3))
 			(index1, index2, index3) = (index1//3, index2//3, index3//3)
 			vert.index = (index1, index2, index3)
 			vert.index2 = unpack('3B', data.read(3)) # wtf?
@@ -301,7 +301,7 @@ class ModelReader:
 			vert.tangent = unp('<I', data.read(4))
 			vert.binormal = unp('<I', data.read(4))
 		elif vtype.V_TYPE == vt_XYZNUVIIIWWTB.V_TYPE:
-			(index3, index2, index1) = unpack('3B', data.read(3))
+			(index1, index2, index3) = unpack('3B', data.read(3))
 			(index1, index2, index3) = (index1//3, index2//3, index3//3)
 			(weight1, weight2) = unpack('2B', data.read(2))
 			(weight1, weight2) = (weight1/255.0, weight2/255.0)
