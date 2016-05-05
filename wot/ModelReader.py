@@ -145,10 +145,8 @@ class ModelReader:
 				stream_name = render_set.find('geometry').find('stream').text.strip()
 
 			# Load render set data
-			vertices, invert_normals = self.readVertices(sections[vertices_name]['data'])
-			indices, groups = self.readIndices(
-				sections[indices_name]['data'],
-				invert_normals)
+			vertices = self.readVertices(sections[vertices_name]['data'])
+			indices, groups = self.readIndices(sections[indices_name]['data'])
 
 			# Load stream data
 			# For some reason this section can be missing
@@ -257,7 +255,7 @@ class ModelReader:
 		for i in range(count):
 			vertices.append(self.readVertice(data, vtype))
 
-		return vertices, vtype.IS_SKINNED
+		return vertices
 
 	def getVertType(self, type, subtype):
 		if subtype is not None:
@@ -279,25 +277,38 @@ class ModelReader:
 		vert = Vertex()
 
 		# Load basic info - xyznuv
-		vert.position = unpack('<3f', data.read(12))
+		(x, z, y) = unpack('<3f', data.read(12))
+		if vtype.IS_SKINNED:
+			y = -y
+		vert.position = (x, y, z)
 		vert.normal = self.readNormal(data, vtype.IS_NEW)
-		vert.uv = unpack('<2f', data.read(8))
+		(u, v) = unpack('<2f', data.read(8))
+		vert.uv = (u, 1-v)
 
 		# Unpack remaining values
 		if vtype.V_TYPE in (vt_SET3_XYZNUVTBPC.V_TYPE, vt_XYZNUVTB.V_TYPE):
 			vert.tangent = unp('<I', data.read(4))
 			vert.binormal = unp('<I', data.read(4))
 		elif vtype.V_TYPE == vt_SET3_XYZNUVIIIWWTBPC.V_TYPE:
-			vert.index = unpack('3B', data.read(3))
-			vert.index2 = unpack('3B', data.read(3))
-			vert.weight = unpack('2B', data.read(2))
-			vert.tangent = unp('I', data.read(4))
-			vert.binormal = unp('I', data.read(4))
+			(index3, index2, index1) = unpack('3B', data.read(3))
+			(index1, index2, index3) = (index1//3, index2//3, index3//3)
+			vert.index = (index1, index2, index3)
+			vert.index2 = unpack('3B', data.read(3)) # wtf?
+			(weight1, weight2) = unpack('2B', data.read(2))
+			(weight1, weight2) = (weight1/255.0, weight2/255.0)
+			weight3 = 1.0 - weight1 - weight2
+			vert.weight = (weight1, weight2, weight3)
+			vert.tangent = unp('<I', data.read(4))
+			vert.binormal = unp('<I', data.read(4))
 		elif vtype.V_TYPE == vt_XYZNUVIIIWWTB.V_TYPE:
-			vert.index = unpack('3B', data.read(3))
-			vert.weight = unpack('2B', data.read(2))
-			vert.tangent = unp('I', data.read(4))
-			vert.binormal = unp('I', data.read(4))
+			(index1, index2, index3) = unpack('3B', data.read(3))
+			(index1, index2, index3) = (index1//3, index2//3, index3//3)
+			(weight1, weight2) = unpack('2B', data.read(2))
+			(weight1, weight2) = (weight1/255.0, weight2/255.0)
+			weight3 = 1.0 - weight1 - weight2
+			vert.weight = (weight1, weight2, weight3)
+			vert.tangent = unp('<I', data.read(4))
+			vert.binormal = unp('<I', data.read(4))
 
 		return vert
 
@@ -320,7 +331,7 @@ class ModelReader:
 				z = -float(pkz&0x7f)/0x7f
 			else:
 				z = float(pkz^0x7f)/0x7f
-			return (x, y, z)
+			return (x, z, y)
 		else:
 			pkz = (int(packed) >> 22) & 0x3FF
 			pky = (int(packed) >> 11) & 0x7FF
@@ -338,9 +349,9 @@ class ModelReader:
 				z = -float((pkz&0x1ff^0x1ff)+1)/0x1ff
 			else:
 				z = float(pkz)/0x1ff
-			return (x, y, z)
+			return (x, z, y)
 
-	def readIndices(self, data, invert_normals):
+	def readIndices(self, data):
 		self.out('== INDICES')
 
 		# Prepare informations
@@ -366,10 +377,7 @@ class ModelReader:
 
 		# Read indices
 		for i in range(count//3):
-			if invert_normals:
-				i3, i2, i1 = unpack(format, data.read(stride*3))
-			else:
-				i1, i2, i3 = unpack(format, data.read(stride*3))
+			i3, i2, i1 = unpack(format, data.read(stride*3))
 			indices += [i1, i2, i3]
 
 		# Read groups
