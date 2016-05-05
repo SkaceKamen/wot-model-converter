@@ -32,6 +32,14 @@ except:
 
 
 #####################################################################
+# Add libs to path
+
+wd = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, os.path.join(wd, 'lib'))
+
+
+
+#####################################################################
 # Supported formats and their classes
 
 supported_formats = {
